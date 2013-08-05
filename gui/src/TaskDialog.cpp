@@ -3,8 +3,8 @@
 #include <QShortcut>
 
 #include "core/IRender.h"
-#include "core/ITask.h"
 #include "core/ITaskGenerator.h"
+#include "core/TaskLogic.h"
 
 namespace gui
 {
@@ -32,9 +32,13 @@ namespace gui
         :QDialog(parent),
         doneShortcut(new QShortcut(QKeySequence("Ctrl+D"), this)),
         skipShortcut(new QShortcut(QKeySequence("Ctrl+S"), this)),
-        taskGenerator(taskGenerator)
+        timer(new QTimer(this)),
+        taskLogic(new core::TaskLogic(taskGenerator))
     {
         ui.setupUi(this);
+
+        timer->setSingleShot(false);
+        timer->start(100);
 
         connectToSignals();
 
@@ -47,35 +51,38 @@ namespace gui
 
     void TaskDialog::validate()
     {
-        if(task.get())
+        const QString &result = getResult();
+        if(!result.isEmpty())
         {
-            const QString &result = getResult();
-            if(!result.isEmpty())
-            {
-                if(task->validate(qPrintable(result)))
-                    generate();
-                else
-                    showInvalid(result);
-            }
+            Q_ASSERT(taskLogic.get());
+            if(taskLogic->validate(qPrintable(result)))
+                generate();
+            else
+                showInvalid(result);
         }
     }
 
     void TaskDialog::generate()
     {
-        if(taskGenerator.get())
-            task.reset(taskGenerator->generateTask().release());
+        Q_ASSERT(taskLogic.get());
+        taskLogic->generate();
         showTask();
         clearStatus();
         clearResult();
     }
 
+    void TaskDialog::showTime()
+    {
+        Q_ASSERT(taskLogic.get());
+        ui.timeLabel->setText(QString::number(taskLogic->elapsed()/1000000) +
+            's');
+    }
+
     void TaskDialog::showTask()
     {
-        if(task.get())
-        {
-            Render render(*ui.taskLabel);
-            task->describe(render);
-        }
+        Render render(*ui.taskLabel);
+        Q_ASSERT(taskLogic.get());
+        taskLogic->describe(render);
     }
 
     void TaskDialog::showInvalid(const QString &str)
@@ -92,6 +99,7 @@ namespace gui
         connect(ui.skipButton, SIGNAL(clicked()), this, SLOT(generate()));
         connect(doneShortcut, SIGNAL(activated()), this, SLOT(validate()));
         connect(skipShortcut, SIGNAL(activated()), this, SLOT(generate()));
+        connect(timer, SIGNAL(timeout()), this, SLOT(showTime()));
     }
 
     void TaskDialog::clearResult()

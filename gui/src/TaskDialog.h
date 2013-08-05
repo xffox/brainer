@@ -1,4 +1,5 @@
 #include <QDialog>
+#include <QTimer>
 
 #include <memory>
 
@@ -8,8 +9,8 @@ class QShortcut;
 
 namespace core
 {
-    class ITask;
     class ITaskGenerator;
+    class TaskLogic;
 }
 
 namespace gui
@@ -25,6 +26,7 @@ namespace gui
     private slots:
         void validate();
         void generate();
+        void showTime();
 
     private:
         void connectToSignals();
@@ -44,7 +46,8 @@ namespace gui
         QShortcut *doneShortcut;
         QShortcut *skipShortcut;
 
-        std::auto_ptr<core::ITaskGenerator> taskGenerator;
-        std::auto_ptr<core::ITask> task;
+        QTimer *timer;
+
+        std::auto_ptr<core::TaskLogic> taskLogic;
     };
 }
