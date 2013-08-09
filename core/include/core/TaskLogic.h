@@ -6,15 +6,17 @@
 
 namespace core
 {
-    class ITask;
     class IRender;
+    class ITask;
     class ITaskGenerator;
+    class ITaskLogicWatcher;
     class Stopwatch;
 
     class TaskLogic
     {
     public:
-        TaskLogic(std::auto_ptr<ITaskGenerator> taskGenerator);
+        TaskLogic(std::auto_ptr<ITaskGenerator> taskGenerator,
+            ITaskLogicWatcher *watcher = 0);
         ~TaskLogic();
 
         void generate();
@@ -28,6 +30,9 @@ namespace core
         std::auto_ptr<Stopwatch> stopwatch;
 
         std::auto_ptr<ITaskGenerator> taskGenerator;
+
+        ITaskLogicWatcher *watcher;
+
         std::auto_ptr<ITask> currentTask;
     };
 }
