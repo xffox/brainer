@@ -13,6 +13,11 @@ namespace core
     class TaskLogic;
 }
 
+namespace task
+{
+    class StatsTaskLogicWatcher;
+}
+
 namespace gui
 {
     class TaskDialog: public QDialog
@@ -32,6 +37,7 @@ namespace gui
         void connectToSignals();
 
         void showTask();
+        void showStats();
         void showInvalid(const QString &str);
 
         void clearResult();
@@ -48,6 +54,7 @@ namespace gui
 
         QTimer *timer;
 
+        std::auto_ptr<task::StatsTaskLogicWatcher> statsWatcher;
         std::auto_ptr<core::TaskLogic> taskLogic;
     };
 }

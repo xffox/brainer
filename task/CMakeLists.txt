@@ -18,6 +18,7 @@ set(TASK_SRCS
     "src/HexByteTaskGenerator.cpp"
     "src/MultiplicationTask.cpp"
     "src/MultiplicationTaskGenerator.cpp"
+    "src/StatsTaskLogicWatcher.cpp"
     )
 
 add_library(${TASK_NAME} ${TASK_SRCS})
