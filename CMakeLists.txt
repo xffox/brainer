@@ -9,6 +9,10 @@ endif()
 set(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/lib")
 set(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 
+if(UNIX)
+    add_definitions("-Wall -Wextra -pedantic -Wno-long-long")
+endif()
+
 add_subdirectory(core)
 add_subdirectory(task)
 add_subdirectory(gui)
