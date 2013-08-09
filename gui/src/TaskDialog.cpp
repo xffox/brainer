@@ -1,10 +1,13 @@
 #include "TaskDialog.h"
 
+#include <numeric>
 #include <QShortcut>
 
 #include "core/IRender.h"
 #include "core/ITaskGenerator.h"
 #include "core/TaskLogic.h"
+#include "core/ITaskLogicWatcher.h"
+#include "task/StatsTaskLogicWatcher.h"
 
 namespace gui
 {
@@ -27,13 +30,28 @@ namespace gui
         };
     }
 
+    namespace
+    {
+        double average(
+            const task::StatsTaskLogicWatcher::TimeCollection &times)
+        {
+            if(!times.empty())
+            {
+                return static_cast<double>(std::accumulate(times.begin(),
+                        times.end(), 0))/times.size();
+            }
+            return 0.0;
+        }
+    }
+
     TaskDialog::TaskDialog(std::auto_ptr<core::ITaskGenerator> taskGenerator,
         QWidget *parent)
         :QDialog(parent),
         doneShortcut(new QShortcut(QKeySequence("Ctrl+D"), this)),
         skipShortcut(new QShortcut(QKeySequence("Ctrl+S"), this)),
         timer(new QTimer(this)),
-        taskLogic(new core::TaskLogic(taskGenerator))
+        statsWatcher(new task::StatsTaskLogicWatcher()),
+        taskLogic(new core::TaskLogic(taskGenerator, statsWatcher.get()))
     {
         ui.setupUi(this);
 
@@ -59,6 +77,7 @@ namespace gui
                 generate();
             else
                 showInvalid(result);
+            showStats();
         }
     }
 
@@ -67,6 +86,7 @@ namespace gui
         Q_ASSERT(taskLogic.get());
         taskLogic->generate();
         showTask();
+        showStats();
         clearStatus();
         clearResult();
     }
@@ -83,6 +103,18 @@ namespace gui
         Render render(*ui.taskLabel);
         Q_ASSERT(taskLogic.get());
         taskLogic->describe(render);
+    }
+
+    void TaskDialog::showStats()
+    {
+        Q_ASSERT(statsWatcher.get());
+        ui.tasksLabel->setText(QString::number(statsWatcher->getTasksCount()));
+        ui.validLabel->setText(QString::number(statsWatcher->getValidCount()));
+        ui.invalidLabel->setText(QString::number(
+                statsWatcher->getInvalidCount()));
+        ui.avTimeLabel->setText(QString::number(
+                average(statsWatcher->getValidTimes())/1000000.0, 'f', 2) +
+            's');
     }
 
     void TaskDialog::showInvalid(const QString &str)
