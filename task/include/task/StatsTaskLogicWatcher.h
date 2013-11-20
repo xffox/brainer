@@ -25,9 +25,9 @@ namespace task
             return validTimes.size();
         }
 
-        unsigned int getInvalidCount() const
+        unsigned int getTriesCount() const
         {
-            return invalidCount;
+            return triesCount;
         }
 
         const TimeCollection &getValidTimes() const
@@ -42,7 +42,7 @@ namespace task
 
     private:
         unsigned int tasksCount;
-        unsigned int invalidCount;
+        unsigned int triesCount;
         TimeCollection validTimes;
     };
 }

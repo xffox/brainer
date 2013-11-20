@@ -16,6 +16,7 @@ namespace gui
     private slots:
         void onHexByte();
         void onMultiplication();
+        void onDict();
 
     private:
         void connectToSignals();

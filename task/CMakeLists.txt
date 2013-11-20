@@ -18,6 +18,8 @@ set(TASK_SRCS
     "src/HexByteTaskGenerator.cpp"
     "src/MultiplicationTask.cpp"
     "src/MultiplicationTaskGenerator.cpp"
+    "src/DictTask.cpp"
+    "src/DictTaskGenerator.cpp"
     "src/StatsTaskLogicWatcher.cpp"
     )
 

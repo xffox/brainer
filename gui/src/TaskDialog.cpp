@@ -110,8 +110,8 @@ namespace gui
         Q_ASSERT(statsWatcher.get());
         ui.tasksLabel->setText(QString::number(statsWatcher->getTasksCount()));
         ui.validLabel->setText(QString::number(statsWatcher->getValidCount()));
-        ui.invalidLabel->setText(QString::number(
-                statsWatcher->getInvalidCount()));
+        ui.triesLabel->setText(QString::number(
+                statsWatcher->getTriesCount()));
         ui.avTimeLabel->setText(QString::number(
                 average(statsWatcher->getValidTimes())/1000000.0, 'f', 2) +
             's');

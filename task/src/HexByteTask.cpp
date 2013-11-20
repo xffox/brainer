@@ -9,11 +9,12 @@
 
 namespace task
 {
-    bool HexByteTask::validate(const std::string &result)
+    bool HexByteTask::validate(const ValueType &result)
     {
-        const char *const str = result.c_str();
+        const std::string str = result;
+        const char *const s = str.c_str();
         char *endptr = 0;
-        unsigned long res = std::strtoul(str, &endptr, 16);
+        unsigned long res = std::strtoul(s, &endptr, 16);
         if(endptr != 0 && *endptr == '\0')
         {
             if(res <= std::numeric_limits<unsigned char>::max())
