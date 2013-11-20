@@ -9,7 +9,7 @@ namespace task
     {
         friend class MultiplicationTaskGenerator;
     public:
-        virtual bool validate(const std::string &result);
+        virtual bool validate(const ValueType &result);
         virtual void describe(core::IRender &render);
 
     private:

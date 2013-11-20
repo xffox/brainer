@@ -3,7 +3,7 @@
 namespace task
 {
     StatsTaskLogicWatcher::StatsTaskLogicWatcher()
-        :tasksCount(0), invalidCount(0), validTimes()
+        :tasksCount(0), triesCount(0), validTimes()
     {
     }
 
@@ -18,7 +18,6 @@ namespace task
     {
         if(valid)
             validTimes.push_back(elapsed);
-        else
-            ++invalidCount;
+        ++triesCount;
     }
 }

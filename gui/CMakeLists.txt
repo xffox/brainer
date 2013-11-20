@@ -10,6 +10,7 @@ set(GUI_NAME brainer)
 include(${QT_USE_FILE})
 
 include_directories(
+    ${BASE_INCLUDES}
     "${CMAKE_CURRENT_BINARY_DIR}" # ui headers
     ${CORE_INCLUDES}
     ${TASK_INCLUDES}
@@ -39,4 +40,4 @@ qt4_wrap_ui(GUI_UI_HDRS ${GUI_UIS})
 
 add_executable(${GUI_NAME} ${GUI_SRCS} ${GUI_MOC_SRCS} ${GUI_UI_HDRS})
 target_link_libraries(${GUI_NAME} ${QT_QTMAIN_LIBRARY} ${QT_LIBRARIES}
-    ${CORE_LIBS} ${TASK_LIBS})
+    ${CORE_LIBS} ${TASK_LIBS} ${BASE_LIBS})

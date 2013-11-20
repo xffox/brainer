@@ -13,6 +13,7 @@ if(UNIX)
     add_definitions("-Wall -Wextra -pedantic -Wno-long-long")
 endif()
 
+add_subdirectory(base)
 add_subdirectory(core)
 add_subdirectory(task)
 add_subdirectory(gui)

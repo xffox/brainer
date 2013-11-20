@@ -53,6 +53,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="dictButton">
+       <property name="text">
+        <string>Dict</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="verticalSpacer_2">
        <property name="orientation">
         <enum>Qt::Vertical</enum>

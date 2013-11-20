@@ -14,6 +14,9 @@
    <string>Dialog</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
+   <property name="sizeConstraint">
+    <enum>QLayout::SetFixedSize</enum>
+   </property>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
@@ -47,6 +50,12 @@
        </item>
        <item>
         <widget class="QLineEdit" name="resultEdit">
+         <property name="minimumSize">
+          <size>
+           <width>150</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
@@ -102,14 +111,14 @@
         </widget>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="invalidTextLabel">
+        <widget class="QLabel" name="triesTextLabel">
          <property name="text">
-          <string>Invalid:</string>
+          <string>Tries:</string>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QLabel" name="invalidLabel">
+        <widget class="QLabel" name="triesLabel">
          <property name="text">
           <string/>
          </property>
@@ -130,19 +139,6 @@
         </widget>
        </item>
       </layout>
-     </item>
-     <item>
-      <spacer name="verticalSpacer">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
      </item>
     </layout>
    </item>

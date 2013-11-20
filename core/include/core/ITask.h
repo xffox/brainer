@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "base/StringValue.h"
+
 namespace core
 {
     class IRender;
@@ -10,9 +12,12 @@ namespace core
     class ITask
     {
     public:
+        typedef base::StringValue ValueType;
+
+    public:
         virtual ~ITask(){}
         
-        virtual bool validate(const std::string &result) = 0;
+        virtual bool validate(const ValueType &result) = 0;
         virtual void describe(IRender &render) = 0;
     };
 }
