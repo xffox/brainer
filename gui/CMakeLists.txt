@@ -18,11 +18,17 @@ include_directories(
 
 set(GUI_SRCS
     "src/main.cpp"
+    "src/GuiConductor.cpp"
+    "src/Application.cpp"
     "src/MenuDialog.cpp"
     "src/TaskDialog.cpp"
+    "src/GuiEndpoint.cpp"
     )
 
 set(GUI_MOC_HDRS
+    "src/GuiConductor.h"
+    "src/GuiEndpoint.h"
+    "src/Application.h"
     "src/MenuDialog.h"
     "src/TaskDialog.h"
     )

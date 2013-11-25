@@ -20,7 +20,7 @@ set(TASK_SRCS
     "src/MultiplicationTaskGenerator.cpp"
     "src/DictTask.cpp"
     "src/DictTaskGenerator.cpp"
-    "src/StatsTaskLogicWatcher.cpp"
+    "src/TaskProvider.cpp"
     )
 
 add_library(${TASK_NAME} ${TASK_SRCS})

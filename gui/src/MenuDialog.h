@@ -2,6 +2,8 @@
 #define GUI_MENUDIALOG_H
 
 #include <QDialog>
+#include <QStringList>
+#include <QString>
 
 #include "ui_MenuDialog.h"
 
@@ -13,14 +15,15 @@ namespace gui
     public:
         MenuDialog(QWidget *parent = 0);
 
-    private slots:
-        void onHexByte();
-        void onMultiplication();
-        void onDict();
+    public slots:
+        void showTasks(const QStringList &tasks);
 
-    private:
-        void connectToSignals();
-        
+    signals:
+        void selected(const QString &task);
+
+    private slots:
+        void onSelected();
+
     private:
         Ui::MenuDialog ui;
     };

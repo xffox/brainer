@@ -3,15 +3,11 @@
 
 #include <memory>
 
+#include "core/Stats.h"
+
 #include "ui_TaskDialog.h"
 
 class QShortcut;
-
-namespace core
-{
-    class ITaskGenerator;
-    class TaskLogic;
-}
 
 namespace task
 {
@@ -24,14 +20,23 @@ namespace gui
     {
         Q_OBJECT
     public:
-        TaskDialog(std::auto_ptr<core::ITaskGenerator> taskGenerator,
-            QWidget *parent = 0);
+        TaskDialog(QWidget *parent = 0);
         virtual ~TaskDialog();
+
+        void setStats(const core::Stats &stats);
+
+    public slots:
+        void setTask(const QString &task);
+        void setValidity(bool valid);
+        void setElapsed(long long elapsedUs);
+
+    signals:
+        void skipped();
+        void entered(const QString &value);
+        void timed();
 
     private slots:
         void validate();
-        void generate();
-        void showTime();
 
     private:
         void connectToSignals();
@@ -47,14 +52,13 @@ namespace gui
         void setStatus(const QString &str);
 
     private:
+        core::Stats stats;
+
         Ui::TaskDialog ui;
 
         QShortcut *doneShortcut;
         QShortcut *skipShortcut;
 
         QTimer *timer;
-
-        std::auto_ptr<task::StatsTaskLogicWatcher> statsWatcher;
-        std::auto_ptr<core::TaskLogic> taskLogic;
     };
 }

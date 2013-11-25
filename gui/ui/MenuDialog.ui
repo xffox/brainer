@@ -18,7 +18,7 @@
     <number>9</number>
    </property>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout">
+    <layout class="QVBoxLayout" name="taskLayout">
      <property name="leftMargin">
       <number>40</number>
      </property>
@@ -37,27 +37,6 @@
         </size>
        </property>
       </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="hexByteButton">
-       <property name="text">
-        <string>HexByte</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="multiplicationButton">
-       <property name="text">
-        <string>Multiplication</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="dictButton">
-       <property name="text">
-        <string>Dict</string>
-       </property>
-      </widget>
      </item>
      <item>
       <spacer name="verticalSpacer_2">
