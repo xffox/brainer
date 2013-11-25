@@ -3,6 +3,8 @@
 
 #include <exception>
 
+#include "engine/Conductor.h"
+
 namespace engine
 {
     template<class Handler>

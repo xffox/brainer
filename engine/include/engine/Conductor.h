@@ -2,17 +2,16 @@
 #define ENGINE_CONDUCTOR_H
 
 #include <cassert>
-#include <condition_variable>
-#include <mutex>
+#include <exception>
 #include <queue>
+
+#include "engine/IMessage.h"
+#include "engine/Endpoint.h"
 
 namespace engine
 {
     template<class Handler>
     class Endpoint;
-
-    template<class Handler>
-    class IMessage;
 
     template<class Handler>
     class Conductor
@@ -21,11 +20,15 @@ namespace engine
         friend class Endpoint;
     public:
         Conductor();
+        virtual ~Conductor()
+        {}
 
-        void run(Endpoint<Handler> &first, Endpoint<Handler> &second);
-        void stop();
+        virtual void begin(Endpoint<Handler> &first,
+            Endpoint<Handler> &second);
+        virtual bool step();
+        virtual void end();
 
-    private:
+    protected:
         struct Message
         {
             Message(IMessage<Handler> *message, Endpoint<Handler> *dst)
@@ -37,69 +40,83 @@ namespace engine
         };
         typedef std::queue<Message> MessageQueue;
 
-    private:
-        void send(Endpoint<Handler> &dst, const IMessage<Handler> &message);
+    protected:
+        // not thread-safe
+        virtual void send(Endpoint<Handler> &dst,
+            const IMessage<Handler> &message);
+        virtual void stop();
 
-        void wake();
+        bool isRunning() const
+        {
+            return running;
+        }
 
-    private:
-        volatile bool running;
-
+    protected:
         MessageQueue queue;
 
-        std::mutex mutex;
-        std::condition_variable condition;
+        volatile bool running;
+
+        Endpoint<Handler> *first;
+        Endpoint<Handler> *second;
     };
 
     template<class Handler>
     Conductor<Handler>::Conductor()
-    :running(true), mutex(), condition()
+    :queue(), running(true), first(0), second(0)
     {}
 
     template<class Handler>
-    void Conductor<Handler>::run(Endpoint<Handler> &first,
+    void Conductor<Handler>::begin(Endpoint<Handler> &first,
         Endpoint<Handler> &second)
     {
+        if(this->first)
+            // TODO: proper exception
+            throw std::exception();
+        this->first = &first;
+        this->second = &second;
         first.setDestination(this, &second);
         second.setDestination(this, &first);
         // TODO: handle exceptions
         first.started();
         second.started();
-        {
-            std::unique_lock<std::mutex> lock(mutex);
-            while(running)
-            {
-                if(!queue.empty())
-                {
-                    IMessage<Handler> *msg = queue.front().message;
-                    Endpoint<Handler> *dst = queue.front().dst;
-                    queue.pop();
-                    std::auto_ptr<IMessage<Handler> > m(msg);
-                    assert(m.get());
-                    assert(dst);
-                    try
-                    {
-                        m->handle(dst->handler());
-                    }
-                    catch(...)
-                    {
-                    }
-                }
-                condition.wait(lock);
-            }
-        }
-        second.stopped();
-        first.stopped();
-        second.setDestination(0, 0);
-        first.setDestination(0, 0);
     }
 
     template<class Handler>
-    void Conductor<Handler>::stop()
+    bool Conductor<Handler>::step()
     {
-        // TODO: make this safe
-        running = false;
-        wake();
+        if(running && !queue.empty())
+        {
+            IMessage<Handler> *msg = queue.front().message;
+            Endpoint<Handler> *dst = queue.front().dst;
+            queue.pop();
+            std::auto_ptr<IMessage<Handler> > m(msg);
+            assert(m.get());
+            assert(dst);
+            try
+            {
+                m->handle(dst->handler());
+            }
+            catch(...)
+            {
+            }
+            return true;
+        }
+        return false;
+    }
+
+    template<class Handler>
+    void Conductor<Handler>::end()
+    {
+        if(!first)
+            // TODO: proper exception
+            throw std::exception();
+        assert(second);
+        second->stopped();
+        first->stopped();
+        second->setDestination(0, 0);
+        first->setDestination(0, 0);
+        first = 0;
+        second = 0;
     }
 
     template<class Handler>
@@ -107,17 +124,14 @@ namespace engine
         const IMessage<Handler> &message)
     {
         std::auto_ptr<IMessage<Handler> > m(message.clone());
-        std::lock_guard<std::mutex> lock(mutex);
         queue.push(Message(m.get(), &dst));
         m.release();
-        condition.notify_one();
     }
 
     template<class Handler>
-    void Conductor<Handler>::wake()
+    void Conductor<Handler>::stop()
     {
-        std::lock_guard<std::mutex> lock(mutex);
-        condition.notify_one();
+        running = false;
     }
 }
 

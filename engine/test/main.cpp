@@ -1,7 +1,7 @@
 #include <iostream>
 #include <memory>
 
-#include "engine/Conductor.h"
+#include "engine/LoopConductor.h"
 #include "engine/Endpoint.h"
 #include "engine/IMessage.h"
 
@@ -145,7 +145,7 @@ int main()
 {
     TestSender sender;
     TestReceiver receiver;
-    engine::Conductor<TestHandler> conductor;
+    engine::LoopConductor<TestHandler> conductor;
     conductor.run(sender, receiver);
     if(sender.getMessageCount() != receiver.getMessageCount())
     {
