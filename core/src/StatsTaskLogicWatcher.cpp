@@ -1,6 +1,6 @@
-#include "task/StatsTaskLogicWatcher.h"
+#include "core/StatsTaskLogicWatcher.h"
 
-namespace task
+namespace core
 {
     StatsTaskLogicWatcher::StatsTaskLogicWatcher()
         :tasksCount(0), triesCount(0), validTimes()

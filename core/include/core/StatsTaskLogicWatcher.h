@@ -1,11 +1,11 @@
-#ifndef TASK_STATSTASKLOGICWATCHER_H
-#define TASK_STATSTASKLOGICWATCHER_H
+#ifndef CORE_STATSTASKLOGICWATCHER_H
+#define CORE_STATSTASKLOGICWATCHER_H
 
 #include <vector>
 
 #include "core/ITaskLogicWatcher.h"
 
-namespace task
+namespace core
 {
     class StatsTaskLogicWatcher: public core::ITaskLogicWatcher
     {
@@ -36,8 +36,8 @@ namespace task
         }
 
     protected:
-        virtual void onGenerated(core::ITask &task, core::ITask *prevTask);
-        virtual void onResult(core::ITask &task, bool validCount,
+        virtual void onGenerated(core::ITask &core, core::ITask *prevTask);
+        virtual void onResult(core::ITask &core, bool validCount,
             long long elapsed);
 
     private:
