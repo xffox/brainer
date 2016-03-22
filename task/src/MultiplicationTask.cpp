@@ -3,23 +3,32 @@
 #include <cstdlib>
 #include <limits>
 #include <sstream>
+#include <stdexcept>
 
 #include "core/IRender.h"
+#include "base/strutil.h"
+#include "util.h"
 
 namespace task
 {
-    bool MultiplicationTask::validate(const ValueType &result)
+    bool MultiplicationTask::validate(const core::String &result) const
     {
         int value = 0;
-        if(result.extract(value))
-            return value == product;
-        return false;
+        std::string regStr;
+        return util::toRegularStr(regStr, result) &&
+            base::strutil::fromStr(value, regStr) &&
+            value == product;
     }
 
-    void MultiplicationTask::describe(core::IRender &render)
+    core::String MultiplicationTask::answer() const
     {
-        std::stringstream stream;
+        return util::toWString(base::strutil::toStr(product));
+    }
+
+    void MultiplicationTask::describe(core::IRender &render) const
+    {
+        std::wstringstream stream;
         stream<<a<<'x'<<b;
-        render.addText(stream.str());
+        render.showTask(stream.str());
     }
 }

@@ -17,10 +17,9 @@ namespace core
     public:
         virtual ~ITaskProvider(){}
 
-        virtual const StringSet &getTasks() const = 0;
+        virtual StringSet getTasks() const = 0;
         // throw exception
-        virtual std::auto_ptr<ITaskGenerator> create(
-            const std::string &name) = 0;
+        virtual std::auto_ptr<ITaskGenerator> create(const std::string &name) = 0;
     };
 }
 

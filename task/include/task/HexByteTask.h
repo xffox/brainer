@@ -9,8 +9,9 @@ namespace task
     {
         friend class HexByteTaskGenerator;
     public:
-        virtual bool validate(const ValueType &result);
-        virtual void describe(core::IRender &render);
+        virtual bool validate(const core::String &result) const;
+        virtual core::String answer() const;
+        virtual void describe(core::IRender &render) const;
 
     private:
         HexByteTask(unsigned char value)

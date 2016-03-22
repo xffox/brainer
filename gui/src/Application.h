@@ -3,11 +3,8 @@
 
 #include <QApplication>
 
+#include "MenuDialog.h"
 #include "engine/Conductor.h"
-#include "core/CoreEndpoint.h"
-#include "core/MessageHandler.h"
-#include "GuiEndpoint.h"
-#include "GuiConductor.h"
 
 namespace gui
 {
@@ -19,12 +16,7 @@ namespace gui
         virtual ~Application();
 
     private:
-        void setup();
-
-    private:
-        core::CoreEndpoint coreEndpoint;
-        GuiEndpoint guiEndpoint;
-        GuiConductor conductor;
+        gui::MenuDialog menuDialog;
     };
 }
 

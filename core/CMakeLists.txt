@@ -16,9 +16,6 @@ set(CORE_LIBS ${CORE_LIBS} PARENT_SCOPE)
 set(CORE_SRCS
     "src/TaskLogic.cpp"
     "src/Stopwatch.cpp"
-    "src/FileDictProvider.cpp"
-    "src/CoreEndpoint.cpp"
-    "src/StatsTaskLogicWatcher.cpp"
     )
 
 add_library(${CORE_NAME} ${CORE_SRCS})

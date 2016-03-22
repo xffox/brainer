@@ -12,7 +12,7 @@ namespace base
     public:
         FileConfig(const std::string &filename);
 
-        virtual ValuesMap read();
+        virtual ValuesCollection read();
         
     private:
         std::string filename;

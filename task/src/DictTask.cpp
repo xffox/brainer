@@ -4,18 +4,23 @@
 
 namespace task
 {
-    DictTask::DictTask(const std::string &key, const std::string &value)
+    DictTask::DictTask(const core::String &key, const core::String &value)
         :key(key), value(value)
     {
     }
 
-    bool DictTask::validate(const ValueType &result)
+    bool DictTask::validate(const core::String &result) const
     {
-        return result.str() == value;
+        return result == value;
     }
 
-    void DictTask::describe(core::IRender &render)
+    core::String DictTask::answer() const
     {
-        render.addText(key);
+        return value;
+    }
+
+    void DictTask::describe(core::IRender &render) const
+    {
+        render.showTask(key);
     }
 }

@@ -7,7 +7,7 @@ set(ENGINE_TEST_SRCS
     "main.cpp"
     )
 
-include(${ENGINE_INCLUDES})
+include_directories(${ENGINE_INCLUDES})
 
 add_executable(${ENGINE_TEST_NAME} ${ENGINE_TEST_SRCS})
 target_link_libraries(${ENGINE_TEST_NAME} ${ENGINE_LIBS})

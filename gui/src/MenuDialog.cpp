@@ -12,6 +12,7 @@
 #include <QPushButton>
 
 #include "TaskDialog.h"
+#include "core/ITaskProvider.h"
 
 namespace gui
 {
@@ -20,10 +21,25 @@ namespace gui
         const char *TASK_PROPERTY = "task";
     }
 
-    MenuDialog::MenuDialog(QWidget *parent)
-        :QDialog(parent)
+    MenuDialog::MenuDialog(std::auto_ptr<core::ITaskProvider> taskProvider,
+        QWidget *parent)
+        :QDialog(parent), taskProvider(taskProvider)
     {
         ui.setupUi(this);
+
+        if(this->taskProvider.get())
+        {
+            const core::ITaskProvider::StringSet tasks = this->taskProvider->getTasks();
+            QStringList names;
+            for(core::ITaskProvider::StringSet::const_iterator iter =
+                tasks.begin(), endIter = tasks.end(); iter != endIter; ++iter)
+                names.push_back(QString(iter->c_str()));
+            showTasks(names);
+        }
+    }
+
+    MenuDialog::~MenuDialog()
+    {
     }
 
     void MenuDialog::showTasks(const QStringList &tasks)
@@ -45,6 +61,8 @@ namespace gui
     {
         QObject *const button = sender();
         Q_ASSERT(button);
-        emit selected(button->property(TASK_PROPERTY).toString());
+        if(taskProvider.get())
+            taskDialog.setTaskGenerator(taskProvider->create(qPrintable(button->property(TASK_PROPERTY).toString())));
+        taskDialog.show();
     }
 }

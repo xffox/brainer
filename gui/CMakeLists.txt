@@ -18,16 +18,12 @@ include_directories(
 
 set(GUI_SRCS
     "src/main.cpp"
-    "src/GuiConductor.cpp"
     "src/Application.cpp"
     "src/MenuDialog.cpp"
     "src/TaskDialog.cpp"
-    "src/GuiEndpoint.cpp"
     )
 
 set(GUI_MOC_HDRS
-    "src/GuiConductor.h"
-    "src/GuiEndpoint.h"
     "src/Application.h"
     "src/MenuDialog.h"
     "src/TaskDialog.h"
@@ -36,6 +32,10 @@ set(GUI_MOC_HDRS
 set(GUI_UIS
     "ui/MenuDialog.ui"
     "ui/TaskDialog.ui"
+    )
+
+set(TEST_SRCS
+    "test.cpp"
     )
 
 qt4_wrap_cpp(GUI_MOC_SRCS ${GUI_MOC_HDRS})
@@ -47,3 +47,6 @@ qt4_wrap_ui(GUI_UI_HDRS ${GUI_UIS})
 add_executable(${GUI_NAME} ${GUI_SRCS} ${GUI_MOC_SRCS} ${GUI_UI_HDRS})
 target_link_libraries(${GUI_NAME} ${QT_QTMAIN_LIBRARY} ${QT_LIBRARIES}
     ${CORE_LIBS} ${TASK_LIBS} ${BASE_LIBS})
+
+add_executable(run ${TEST_SRCS})
+target_link_libraries(run ${CORE_LIBS} ${TASK_LIBS} ${BASE_LIBS})

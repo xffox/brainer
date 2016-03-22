@@ -10,7 +10,7 @@ namespace base
     class StreamConfig: public IConfig
     {
     public:
-        virtual ValuesMap readStream(std::istream &stream);
+        virtual ValuesCollection readStream(std::wistream &stream);
     };
 }
 

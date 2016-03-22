@@ -21,6 +21,7 @@ set(TASK_SRCS
     "src/DictTask.cpp"
     "src/DictTaskGenerator.cpp"
     "src/TaskProvider.cpp"
+    "src/util.cpp"
     )
 
 add_library(${TASK_NAME} ${TASK_SRCS})

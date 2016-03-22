@@ -1,20 +1,19 @@
-#ifndef BASE_STRINGVALUETRAITS_H
-#define BASE_STRINGVALUETRAITS_H
+#ifndef BASE_STRINGVALUE_H
+#define BASE_STRINGVALUE_H
 
-#include <cstdlib>
-#include <limits>
-#include <sstream>
 #include <string>
+#include <locale>
+#include <sstream>
 
-namespace stringvalue
+namespace base
 {
-    template<class T>
-    struct StringValueTraits;
-
-    template<>
-    struct StringValueTraits<int>
+    namespace strutil
     {
-        static bool from(int &value, const std::string &str)
+        template<typename T>
+        bool fromStr(T &value, const std::string &str);
+
+        template<>
+        bool fromStr(int &value, const std::string &str)
         {
             const char *const s = str.c_str();
             char *endptr = 0;
@@ -31,13 +30,12 @@ namespace stringvalue
             return false;
         }
 
-        static std::string to(int value)
+        template<typename T>
+        std::string toStr(T value)
         {
-            std::stringstream stream;
-            stream<<value;
-            return stream.str();
+            return std::to_string(value);
         }
-    };
+    }
 }
 
 #endif

@@ -10,14 +10,15 @@ namespace task
     class DictTask: public core::ITask
     {
     public:
-        DictTask(const std::string &key, const std::string &value);
+        DictTask(const core::String &key, const core::String &value);
         
-        virtual bool validate(const ValueType &result);
-        virtual void describe(core::IRender &render);
+        virtual bool validate(const core::String &result) const;
+        virtual core::String answer() const;
+        virtual void describe(core::IRender &render) const;
 
     private:
-        std::string key;
-        std::string value;
+        core::String key;
+        core::String value;
     };
 }
 

@@ -1,11 +1,19 @@
 #ifndef GUI_MENUDIALOG_H
 #define GUI_MENUDIALOG_H
 
+#include <memory>
+
 #include <QDialog>
 #include <QStringList>
 #include <QString>
 
+#include "TaskDialog.h"
 #include "ui_MenuDialog.h"
+
+namespace core
+{
+    class ITaskProvider;
+}
 
 namespace gui
 {
@@ -13,19 +21,22 @@ namespace gui
     {
         Q_OBJECT
     public:
-        MenuDialog(QWidget *parent = 0);
+        MenuDialog(std::auto_ptr<core::ITaskProvider> taskProvider,
+            QWidget *parent = 0);
+        virtual ~MenuDialog();
 
     public slots:
         void showTasks(const QStringList &tasks);
-
-    signals:
-        void selected(const QString &task);
 
     private slots:
         void onSelected();
 
     private:
+        std::auto_ptr<core::ITaskProvider> taskProvider;
+
         Ui::MenuDialog ui;
+
+        gui::TaskDialog taskDialog;
     };
 }
 

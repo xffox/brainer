@@ -10,10 +10,9 @@ namespace task
     public:
         TaskProvider();
 
-        virtual const StringSet &getTasks() const;
+        virtual StringSet getTasks() const;
         // throw exception
-        virtual std::auto_ptr<core::ITaskGenerator> create(
-            const std::string &name);
+        virtual std::auto_ptr<core::ITaskGenerator> create(const std::string &name);
 
     private:
         StringSet tasks;

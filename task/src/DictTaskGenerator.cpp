@@ -7,48 +7,30 @@
 #include <iterator>
 
 #include "task/DictTask.h"
-#include "core/IDictProvider.h"
 #include "core/IIterator.h"
 
 namespace task
 {
     DictTaskGenerator::DictTaskGenerator(unsigned int seed,
-        std::auto_ptr<core::IDictProvider> provider)
-        :keys(), provider(provider)
+        const TaskCollection &tasks)
+        :tasks(tasks)
     {
-        if(!this->provider.get())
-            // TODO: exception
-            throw std::exception();
         srand(seed);
-        readKeys();
     }
 
     DictTaskGenerator::~DictTaskGenerator()
     {
     }
 
-    void DictTaskGenerator::readKeys()
-    {
-        assert(provider.get());
-        std::auto_ptr<core::IIterator<std::string> > iter = provider->keys();
-        assert(iter.get());
-        const std::string *k = 0;
-        keys.clear();
-        while((k = iter->next()))
-            keys.push_back(*k);
-    }
-
     std::auto_ptr<core::ITask> DictTaskGenerator::generateTask()
     {
-        if(!keys.empty())
+        if(!tasks.empty())
         {
-            assert(provider.get());
-            std::size_t pos = rand()%keys.size();
-            const std::string &k = keys[pos];
+            std::size_t pos = rand()%tasks.size();
             try
             {
-                return std::auto_ptr<core::ITask>(new DictTask(k,
-                        provider->get(k)));
+                const auto &p = tasks[pos];
+                return std::auto_ptr<core::ITask>(new DictTask(p.first, p.second));
             }
             catch(const std::exception&)
             {

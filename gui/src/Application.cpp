@@ -2,15 +2,16 @@
 
 #include <memory>
 
+#include "core/ITaskProvider.h"
 #include "task/TaskProvider.h"
 
 namespace gui
 {
     Application::Application(int &argc, char **argv)
-        :QApplication(argc, argv), coreEndpoint(
-            std::auto_ptr<core::ITaskProvider>(new task::TaskProvider())),
-        guiEndpoint(), conductor(coreEndpoint, guiEndpoint)
+        :QApplication(argc, argv),
+        menuDialog(std::auto_ptr<core::ITaskProvider>(new task::TaskProvider()))
     {
+        menuDialog.show();
     }
 
     Application::~Application()

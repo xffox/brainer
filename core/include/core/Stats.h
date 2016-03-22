@@ -1,64 +1,36 @@
 #ifndef CORE_STATS_H
 #define CORE_STATS_H
 
+#include <cstddef>
+
 namespace core
 {
     class Stats
     {
     public:
-        Stats()
-            :taskCount(0), validCount(0), triesCount(0), averageTime(0.0)
-        {}
-
-        unsigned int getTaskCount() const
+        Stats &setAnswered(bool answered)
         {
-            return taskCount;
-        }
-
-        Stats &setTaskCount(unsigned int taskCount)
-        {
-            this->taskCount = taskCount;
+            this->answered = answered;
             return *this;
         }
 
-        unsigned int getValidCount() const
+        Stats &setTimeUs(long long timeUs)
         {
-            return validCount;
-        }
-
-        Stats &setValidCount(unsigned int validCount)
-        {
-            this->validCount = validCount;
+            this->timeUs = timeUs;
             return *this;
         }
 
-        unsigned int getTriesCount() const
+        Stats &setTries(std::size_t tries)
         {
-            return triesCount;
-        }
-
-        Stats &setTriesCount(unsigned int triesCount)
-        {
-            this->triesCount = triesCount;
+            this->tries = tries;
             return *this;
         }
 
-        double getAverageTime() const
-        {
-            return averageTime;
-        }
-
-        Stats &setAverageTime(double averageTime)
-        {
-            this->averageTime = averageTime;
-            return *this;
-        }
-
-    private:
-        unsigned int taskCount;
-        unsigned int validCount;
-        unsigned int triesCount;
-        double averageTime;
+    public:
+        // TODO: task ids might be required
+        bool answered = false;
+        long long timeUs = 0;
+        std::size_t tries = 0;
     };
 }
 
