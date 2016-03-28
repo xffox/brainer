@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <queue>
+#include <cstddef>
 
 #include "core/ITaskGenerator.h"
 #include "core/String.h"
@@ -28,7 +30,14 @@ namespace task
         virtual std::auto_ptr<core::ITask> generateTask();
 
     private:
+        using IdxCol = std::vector<std::size_t>;
+        using IdxQueue = std::queue<std::size_t>;
+
+    private:
         TaskCollection tasks;
+        IdxCol indices;
+        std::size_t excludedSize;
+        IdxQueue excludedIndices;
     };
 }
 

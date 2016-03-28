@@ -4,7 +4,6 @@
 #include <QApplication>
 
 #include "MenuDialog.h"
-#include "engine/Conductor.h"
 
 namespace gui
 {
