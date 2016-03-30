@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.6)
 
 project(brainer)
 
+include(CTest)
+
 if(CMAKE_BUILD_TYPE STREQUAL "debug")
     add_definitions(-DDEBUG)
 endif()
@@ -14,7 +16,8 @@ if(UNIX)
 endif()
 
 add_subdirectory(base)
-add_subdirectory(engine)
+add_subdirectory(csv)
 add_subdirectory(core)
 add_subdirectory(task)
 add_subdirectory(gui)
+add_subdirectory(bot)
