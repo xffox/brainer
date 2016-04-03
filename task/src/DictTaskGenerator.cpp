@@ -1,7 +1,8 @@
 #include "task/DictTaskGenerator.h"
 
+#include <algorithm>
 #include <cassert>
-#include <exception>
+#include <stdexcept>
 #include <memory>
 #include <cstdlib>
 #include <iterator>
@@ -12,10 +13,16 @@
 namespace task
 {
     DictTaskGenerator::DictTaskGenerator(unsigned int seed,
-        const TaskCollection &tasks)
-        :tasks(tasks), indices(), excludedSize(tasks.size()/2), excludedIndices()
+        const TaskCollection &tasks, bool reversed)
+        :tasks(), reversed(reversed), indices(),
+        excludedSize(tasks.size()/2), excludedIndices()
     {
-        for(std::size_t i = 0; i < tasks.size(); ++i)
+        std::copy_if(tasks.begin(), tasks.end(),
+            std::back_inserter(this->tasks),
+            [](const TaskCollection::value_type &p){return !p.second.empty();});
+        if(this->tasks.empty())
+            throw std::runtime_error("no suitable tasks");
+        for(std::size_t i = 0; i < this->tasks.size(); ++i)
             indices.push_back(i);
         srand(seed);
     }
@@ -47,7 +54,12 @@ namespace task
             try
             {
                 const auto &p = tasks[idx];
-                return std::auto_ptr<core::ITask>(new DictTask(p.first, p.second));
+                if(!reversed)
+                    return std::auto_ptr<core::ITask>(
+                        new DictTask(StringCollection{p.first}, p.second));
+                else
+                    return std::auto_ptr<core::ITask>(
+                        new DictTask(p.second, StringCollection{p.first}));
             }
             catch(const std::exception&)
             {

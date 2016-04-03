@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cassert>
 
+#include "base/strutil.h"
 #include "StringList.h"
 
 namespace bot
@@ -20,24 +21,6 @@ namespace bot
                 return std::find_if(pos, end,
                     [sep](char c){ return c != sep; });
             }
-
-            template<class Iterator>
-            StringList split(Iterator begin, Iterator end, char sep = ' ')
-            {
-                StringList res;
-                auto pos = begin;
-                while(pos != end)
-                {
-                    pos = findNonSep(pos, end, sep);
-                    if(pos == end)
-                        break;
-                    auto endPos = std::find(pos, end, sep);
-                    assert(endPos - pos > 0);
-                    res.push_back(std::string(pos, endPos));
-                    pos = endPos;
-                }
-                return res;
-            }
         }
 
         base::Nullable<Input> parse(const std::string &str)
@@ -45,7 +28,7 @@ namespace bot
             auto iter = findNonSep(str.begin(), str.end(), ' ');
             if(iter != str.end() && *iter == COMMAND_START)
             {
-                const auto words = split(iter, str.end(), ' ');
+                const auto words = base::strutil::split(iter, str.end(), ' ');
                 assert(!words[0].empty());
                 if(words[0].size() == 1)
                     return base::Nullable<Input>();

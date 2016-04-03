@@ -5,23 +5,29 @@
 
 namespace task
 {
-    class MultiplicationTask: public core::ITask
+    class ArithmeticTask: public core::ITask
     {
-        friend class MultiplicationTaskGenerator;
+        friend class ArithmeticTaskGenerator;
+    public:
+        enum class Operation
+        {
+            PLUS = 0,
+            MULT
+        };
+
     public:
         virtual bool validate(const core::String &result) const;
         virtual core::String answer() const;
         virtual void describe(core::IRender &render) const;
 
     private:
-        MultiplicationTask(int a, int b)
-            :a(a), b(b), product(a*b)
-        {}
+        ArithmeticTask(int a, int b, Operation op);
         
     private:
         int a;
         int b;
-        int product;
+        int result;
+        Operation operation;
     };
 }
 

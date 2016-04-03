@@ -1,6 +1,9 @@
 #ifndef TASK_TASKPROVIDER_H
 #define TASK_TASKPROVIDER_H
 
+#include <unordered_map>
+#include <functional>
+
 #include "core/ITaskProvider.h"
 
 namespace task
@@ -15,7 +18,11 @@ namespace task
         virtual std::auto_ptr<core::ITaskGenerator> create(const std::string &name);
 
     private:
-        StringSet tasks;
+        using TaskMap = std::unordered_map<std::string,
+              std::function<std::auto_ptr<core::ITaskGenerator>()>>;
+
+    private:
+        TaskMap tasks;
     };
 }
 

@@ -5,10 +5,10 @@
 
 namespace task
 {
-    class MultiplicationTaskGenerator: public core::ITaskGenerator
+    class ArithmeticTaskGenerator: public core::ITaskGenerator
     {
     public:
-        MultiplicationTaskGenerator(unsigned int seed);
+        ArithmeticTaskGenerator(unsigned int seed);
 
         virtual std::auto_ptr<core::ITask> generateTask();
     };
