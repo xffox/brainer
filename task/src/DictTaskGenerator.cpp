@@ -8,7 +8,6 @@
 #include <iterator>
 
 #include "task/DictTask.h"
-#include "core/IIterator.h"
 
 namespace task
 {
