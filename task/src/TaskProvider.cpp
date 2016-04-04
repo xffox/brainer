@@ -63,7 +63,7 @@ namespace task
                             tagaini::readCollection(stream)));
                 }),
             std::make_pair("revtagaini", []() {
-                    std::wifstream stream("/home/fox/temp/numbers.tsv");
+                    std::wifstream stream("numbers.tsv");
                     stream.imbue(std::locale(std::locale("")));
                     if(!stream.is_open())
                         throw std::exception();
