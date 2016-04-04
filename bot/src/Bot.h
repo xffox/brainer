@@ -20,9 +20,9 @@ namespace bot
         void run();
         
     private:
-        std::auto_ptr<gloox::Client> client;
-        std::auto_ptr<ConnectionHandler> connectionHandler;
-        std::auto_ptr<MessageSessionHandler> messageSessionHandler;
+        std::unique_ptr<gloox::Client> client;
+        std::unique_ptr<ConnectionHandler> connectionHandler;
+        std::unique_ptr<MessageSessionHandler> messageSessionHandler;
     };
 }
 

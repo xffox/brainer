@@ -21,7 +21,7 @@ namespace gui
     {
         Q_OBJECT
     public:
-        MenuDialog(std::auto_ptr<core::ITaskProvider> taskProvider,
+        MenuDialog(std::unique_ptr<core::ITaskProvider> taskProvider,
             QWidget *parent = 0);
         virtual ~MenuDialog();
 
@@ -32,7 +32,7 @@ namespace gui
         void onSelected();
 
     private:
-        std::auto_ptr<core::ITaskProvider> taskProvider;
+        std::unique_ptr<core::ITaskProvider> taskProvider;
 
         Ui::MenuDialog ui;
 

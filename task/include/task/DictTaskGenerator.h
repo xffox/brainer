@@ -29,7 +29,7 @@ namespace task
             bool reversed = false);
         virtual ~DictTaskGenerator();
 
-        virtual std::auto_ptr<core::ITask> generateTask();
+        virtual std::unique_ptr<core::ITask> generateTask();
 
     private:
         using IdxCol = std::vector<std::size_t>;

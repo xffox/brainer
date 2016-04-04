@@ -36,21 +36,21 @@ namespace task
     TaskProvider::TaskProvider()
         :tasks{
             std::make_pair("hex", []() {
-                    return std::auto_ptr<core::ITaskGenerator>(
+                    return std::unique_ptr<core::ITaskGenerator>(
                         new HexByteTaskGenerator(rand()));
                 }),
             std::make_pair("arithmetic", []() {
-                    return std::auto_ptr<core::ITaskGenerator>(
+                    return std::unique_ptr<core::ITaskGenerator>(
                         new ArithmeticTaskGenerator(rand()));
                 }),
             std::make_pair("hiragana", []() {
                     base::FileConfig fc("hiragana.txt");
-                    return std::auto_ptr<core::ITaskGenerator>(
+                    return std::unique_ptr<core::ITaskGenerator>(
                         new DictTaskGenerator(rand(), fromConfig(fc.read())));
                 }),
             std::make_pair("katakana", []() {
                     base::FileConfig fc("katakana.txt");
-                    return std::auto_ptr<core::ITaskGenerator>(
+                    return std::unique_ptr<core::ITaskGenerator>(
                         new DictTaskGenerator(rand(), fromConfig(fc.read())));
                 }),
             std::make_pair("tagaini", []() {
@@ -58,7 +58,7 @@ namespace task
                     stream.imbue(std::locale(std::locale("")));
                     if(!stream.is_open())
                         throw std::exception();
-                    return std::auto_ptr<core::ITaskGenerator>(
+                    return std::unique_ptr<core::ITaskGenerator>(
                         new DictTaskGenerator(rand(),
                             tagaini::readCollection(stream)));
                 }),
@@ -67,9 +67,14 @@ namespace task
                     stream.imbue(std::locale(std::locale("")));
                     if(!stream.is_open())
                         throw std::exception();
-                    return std::auto_ptr<core::ITaskGenerator>(
+                    return std::unique_ptr<core::ITaskGenerator>(
                         new DictTaskGenerator(rand(),
                             tagaini::readCollection(stream), true));
+                }),
+            std::make_pair("moons", []() {
+                    base::FileConfig fc("moons.conf");
+                    return std::unique_ptr<core::ITaskGenerator>(
+                        new DictTaskGenerator(rand(), fromConfig(fc.read())));
                 })
         }
     {}
@@ -85,7 +90,7 @@ namespace task
         return result;
     }
 
-    std::auto_ptr<core::ITaskGenerator> TaskProvider::create(
+    std::unique_ptr<core::ITaskGenerator> TaskProvider::create(
         const std::string &name)
     {
         auto iter = tasks.find(name);

@@ -19,7 +19,8 @@ namespace core
 
         virtual StringSet getTasks() const = 0;
         // throw exception
-        virtual std::auto_ptr<ITaskGenerator> create(const std::string &name) = 0;
+        virtual std::unique_ptr<ITaskGenerator> create(
+            const std::string &name) = 0;
     };
 }
 

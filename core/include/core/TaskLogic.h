@@ -22,7 +22,7 @@ namespace core
         using StatsCol = std::vector<Stats>;
 
     public:
-        TaskLogic(std::auto_ptr<ITaskGenerator> taskGenerator,
+        TaskLogic(std::unique_ptr<ITaskGenerator> taskGenerator,
             IRender &render);
         ~TaskLogic();
 
@@ -39,11 +39,11 @@ namespace core
     private:
         IRender &render;
 
-        std::auto_ptr<Stopwatch> stopwatch;
+        std::unique_ptr<Stopwatch> stopwatch;
 
-        std::auto_ptr<ITaskGenerator> taskGenerator;
+        std::unique_ptr<ITaskGenerator> taskGenerator;
 
-        std::auto_ptr<ITask> currentTask;
+        std::unique_ptr<ITask> currentTask;
 
         // TODO: put to stats, use last as current
         base::Nullable<Stats> current;

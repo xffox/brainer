@@ -11,9 +11,9 @@ namespace task
         srand(seed);
     }
 
-    std::auto_ptr<core::ITask> ArithmeticTaskGenerator::generateTask()
+    std::unique_ptr<core::ITask> ArithmeticTaskGenerator::generateTask()
     {
-        return std::auto_ptr<core::ITask>(
+        return std::unique_ptr<core::ITask>(
             new ArithmeticTask(rand()%100, rand()%100,
                 static_cast<ArithmeticTask::Operation>(rand()%2)));
     }

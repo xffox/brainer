@@ -35,8 +35,8 @@ namespace bot
     private:
         gloox::MessageSession *session;
 
-        std::auto_ptr<task::TaskProvider> taskProvider;
-        std::auto_ptr<core::TaskLogic> taskLogic;
+        std::unique_ptr<task::TaskProvider> taskProvider;
+        std::unique_ptr<core::TaskLogic> taskLogic;
     };
 }
 

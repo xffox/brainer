@@ -9,7 +9,8 @@ namespace gui
 {
     Application::Application(int &argc, char **argv)
         :QApplication(argc, argv),
-        menuDialog(std::auto_ptr<core::ITaskProvider>(new task::TaskProvider()))
+        menuDialog(std::unique_ptr<core::ITaskProvider>(
+                new task::TaskProvider()))
     {
         menuDialog.show();
     }

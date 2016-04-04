@@ -12,7 +12,7 @@ namespace core
     public:
         virtual ~ITaskGenerator(){}
 
-        virtual std::auto_ptr<ITask> generateTask() = 0;
+        virtual std::unique_ptr<ITask> generateTask() = 0;
     };
 }
 

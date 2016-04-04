@@ -13,6 +13,7 @@
 
 #include "TaskDialog.h"
 #include "core/ITaskProvider.h"
+#include "core/ITaskGenerator.h"
 
 namespace gui
 {
@@ -21,9 +22,9 @@ namespace gui
         const char *TASK_PROPERTY = "task";
     }
 
-    MenuDialog::MenuDialog(std::auto_ptr<core::ITaskProvider> taskProvider,
+    MenuDialog::MenuDialog(std::unique_ptr<core::ITaskProvider> taskProvider,
         QWidget *parent)
-        :QDialog(parent), taskProvider(taskProvider)
+        :QDialog(parent), taskProvider(std::move(taskProvider))
     {
         ui.setupUi(this);
 

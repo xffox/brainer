@@ -30,7 +30,7 @@ namespace task
     {
     }
 
-    std::auto_ptr<core::ITask> DictTaskGenerator::generateTask()
+    std::unique_ptr<core::ITask> DictTaskGenerator::generateTask()
     {
         if(!tasks.empty())
         {
@@ -54,10 +54,10 @@ namespace task
             {
                 const auto &p = tasks[idx];
                 if(!reversed)
-                    return std::auto_ptr<core::ITask>(
+                    return std::unique_ptr<core::ITask>(
                         new DictTask(StringCollection{p.first}, p.second));
                 else
-                    return std::auto_ptr<core::ITask>(
+                    return std::unique_ptr<core::ITask>(
                         new DictTask(p.second, StringCollection{p.first}));
             }
             catch(const std::exception&)
@@ -65,6 +65,6 @@ namespace task
             }
         }
         // TODO: exception
-        return std::auto_ptr<core::ITask>();
+        return std::unique_ptr<core::ITask>();
     }
 }

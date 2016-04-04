@@ -33,7 +33,8 @@ namespace gui
         TaskDialog(QWidget *parent = 0);
         virtual ~TaskDialog();
 
-        void setTaskGenerator(std::auto_ptr<core::ITaskGenerator> taskGenerator);
+        void setTaskGenerator(
+            std::unique_ptr<core::ITaskGenerator> taskGenerator);
 
     signals:
         void entered(const QString &value);
@@ -63,7 +64,7 @@ namespace gui
         void setStatus(const QString &str);
 
     private:
-        std::auto_ptr<core::TaskLogic> logic;
+        std::unique_ptr<core::TaskLogic> logic;
 
         Ui::TaskDialog ui;
 

@@ -61,6 +61,7 @@ int main()
     catch(const std::exception &exc)
     {
         std::cerr<<"error: "<<exc.what()<<std::endl;
+        return 1;
     }
     return 0;
 }

@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <cassert>
+#include <stdexcept>
 
 #include <gloox/jid.h>
 #include <gloox/client.h>
@@ -27,6 +28,7 @@ namespace bot
     void Bot::run()
     {
         assert(client.get());
-        client->connect();
+        if(!client->connect())
+            throw std::runtime_error("connection error");
     }
 }

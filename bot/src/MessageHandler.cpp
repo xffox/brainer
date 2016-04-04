@@ -36,7 +36,7 @@ namespace bot
 
     // TODO: measure response time
     void MessageHandler::handleMessage(const gloox::Message& msg,
-        gloox::MessageSession *session)
+        gloox::MessageSession*)
     {
         if(msg.subtype() == gloox::Message::Chat)
         {
@@ -137,7 +137,7 @@ namespace bot
     {
         assert(session);
         assert(taskProvider.get());
-        std::auto_ptr<core::ITaskGenerator> taskGenerator;
+        std::unique_ptr<core::ITaskGenerator> taskGenerator;
         try
         {
             taskGenerator.reset(taskProvider->create(name).release());
@@ -147,7 +147,7 @@ namespace bot
             return false;
         }
         session->send("let's play");
-        taskLogic.reset(new core::TaskLogic(taskGenerator, *this));
+        taskLogic.reset(new core::TaskLogic(std::move(taskGenerator), *this));
         return true;
     }
 

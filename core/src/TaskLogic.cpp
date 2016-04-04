@@ -10,10 +10,10 @@
 namespace core
 {
     // TODO: null exception
-    TaskLogic::TaskLogic(std::auto_ptr<ITaskGenerator> taskGenerator,
+    TaskLogic::TaskLogic(std::unique_ptr<ITaskGenerator> taskGenerator,
         IRender &render)
         :render(render), stopwatch(new Stopwatch()),
-        taskGenerator(taskGenerator),
+        taskGenerator(std::move(taskGenerator)),
         currentTask(), current(), stats()
     {
         generate();

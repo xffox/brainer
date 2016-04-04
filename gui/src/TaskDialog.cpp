@@ -28,9 +28,11 @@ namespace gui
     {
     }
 
-    void TaskDialog::setTaskGenerator(std::auto_ptr<core::ITaskGenerator> taskGenerator)
+    void TaskDialog::setTaskGenerator(
+        std::unique_ptr<core::ITaskGenerator> taskGenerator)
     {
-        this->logic.reset(new core::TaskLogic(taskGenerator, *this));
+        this->logic.reset(new core::TaskLogic(std::move(taskGenerator),
+                *this));
         clearResult();
         clearStatus();
         showStats();

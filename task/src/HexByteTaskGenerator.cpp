@@ -11,8 +11,8 @@ namespace task
         srand(seed);
     }
 
-    std::auto_ptr<core::ITask> HexByteTaskGenerator::generateTask()
+    std::unique_ptr<core::ITask> HexByteTaskGenerator::generateTask()
     {
-        return std::auto_ptr<core::ITask>(new HexByteTask(rand()));
+        return std::unique_ptr<core::ITask>(new HexByteTask(rand()));
     }
 }

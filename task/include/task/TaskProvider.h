@@ -15,11 +15,12 @@ namespace task
 
         virtual StringSet getTasks() const;
         // throw exception
-        virtual std::auto_ptr<core::ITaskGenerator> create(const std::string &name);
+        virtual std::unique_ptr<core::ITaskGenerator> create(
+            const std::string &name);
 
     private:
         using TaskMap = std::unordered_map<std::string,
-              std::function<std::auto_ptr<core::ITaskGenerator>()>>;
+              std::function<std::unique_ptr<core::ITaskGenerator>()>>;
 
     private:
         TaskMap tasks;
