@@ -4,6 +4,10 @@
 
 namespace bot
 {
+    ConnectionHandler::ConnectionHandler(gloox::Client &client)
+        :client(client)
+    {}
+
     void ConnectionHandler::onConnect()
     {
         xlog::log().info("ConnectionHandler", "bot connected");

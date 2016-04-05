@@ -20,6 +20,7 @@ namespace
     {
         std::string jid;
         std::string password;
+        std::string resource;
     };
 
     Config readConfig(const std::string &filename)
@@ -49,6 +50,11 @@ namespace
             if(passwordIter == conf.end())
                 throw std::runtime_error("config: password missing");
             result.password = convert.to_bytes(passwordIter->second);
+        }
+        {
+            auto resourceIter = conf.find(L"resource");
+            if(resourceIter != conf.end())
+                result.resource = convert.to_bytes(resourceIter->second);
         }
         return result;
     }

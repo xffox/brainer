@@ -14,7 +14,8 @@ namespace bot
     class Bot
     {
     public:
-        Bot(const std::string &jid, const std::string &password);
+        Bot(const std::string &jid, const std::string &password,
+            const std::string &resources = "");
         ~Bot();
 
         void run();
