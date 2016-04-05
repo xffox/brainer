@@ -8,7 +8,11 @@
 #include <locale>
 #include <codecvt>
 
+#include "xlog/xlog.h"
+
 #include "base/FileConfig.h"
+
+XLOG_SET_LOGGER(xlog::ConsoleLogger)
 
 namespace
 {

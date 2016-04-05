@@ -4,6 +4,9 @@ project(brainer)
 
 include(CTest)
 
+set(CPACK_GENERATOR "TGZ")
+include(CPack)
+
 if(CMAKE_BUILD_TYPE STREQUAL "debug")
     add_definitions(-DDEBUG)
 endif()
@@ -16,6 +19,7 @@ if(UNIX)
 endif()
 
 add_subdirectory(base)
+add_subdirectory(xlog/xlog)
 add_subdirectory(csv)
 add_subdirectory(core)
 add_subdirectory(task)
