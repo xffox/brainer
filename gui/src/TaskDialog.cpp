@@ -22,6 +22,8 @@ namespace gui
         timer->setSingleShot(false);
 
         connectToSignals();
+
+
     }
 
     TaskDialog::~TaskDialog()
@@ -31,32 +33,26 @@ namespace gui
     void TaskDialog::setTaskGenerator(
         std::unique_ptr<core::ITaskGenerator> taskGenerator)
     {
-        this->logic.reset(new core::TaskLogic(std::move(taskGenerator),
-                *this));
-        clearResult();
-        clearStatus();
-        showStats();
+        this->logic.reset(new core::TaskLogic(std::move(taskGenerator)));
+        describeTask();
     }
 
-    void TaskDialog::displayTask(const QString &task)
-    {
-        Q_ASSERT(timer);
-        ui.taskLabel->setText(task);
-        timer->start(300);
-        showStats();
-        clearResult();
-        showElapsed(0);
-    }
-
-    void TaskDialog::showTask(const core::String &str)
+    void TaskDialog::addText(const core::String &str)
     {
         task = QString::fromStdWString(str);
-        displayTask(task);
+        ui.taskLabel->setText(task);
     }
 
     void TaskDialog::showInvalid(const core::String &str)
     {
-        showInvalid(QString::fromStdWString(str));
+        setStatus("!" + QString::fromStdWString(str));
+        clearResult();
+    }
+
+    void TaskDialog::showValid(const core::String &str)
+    {
+        setStatus(QString::fromStdWString(str));
+        clearResult();
     }
 
     void TaskDialog::showAnswer(const core::String &str)
@@ -70,14 +66,26 @@ namespace gui
         {
             clearStatus();
             if(logic.get())
-                logic->validate(getResult().toStdWString());
+            {
+                const auto answer = getResult().toStdWString();
+                if(logic->validate(answer))
+                {
+                    describeTask();
+                    showValid(answer);
+                }
+                else
+                {
+                    showInvalid(answer);
+                }
+            }
         }
     }
 
     void TaskDialog::skip()
     {
         if(logic.get())
-            logic->skip();
+            showAnswer(logic->skip());
+        describeTask();
     }
 
     void TaskDialog::timed()
@@ -113,12 +121,6 @@ namespace gui
         }
     }
 
-    void TaskDialog::showInvalid(const QString &str)
-    {
-        setStatus("!" + str);
-        clearResult();
-    }
-
     void TaskDialog::connectToSignals()
     {
         // TODO: need this?
@@ -129,6 +131,19 @@ namespace gui
         connect(doneShortcut, SIGNAL(activated()), this, SLOT(validate()));
         connect(skipShortcut, SIGNAL(activated()), this, SLOT(skip()));
         connect(timer, SIGNAL(timeout()), this, SLOT(timed()));
+    }
+
+    void TaskDialog::describeTask()
+    {
+        Q_ASSERT(timer);
+        timer->start(300);
+        showStats();
+        clearResult();
+        showElapsed(0);
+        if(logic.get())
+        {
+            logic->describe(*this);
+        }
     }
 
     void TaskDialog::clearResult()

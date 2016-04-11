@@ -64,6 +64,6 @@ namespace task
     {
         std::wstringstream stream;
         stream<<a<<operationString(operation)<<b;
-        render.showTask(stream.str());
+        render.addText(stream.str());
     }
 }

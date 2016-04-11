@@ -15,11 +15,13 @@
 
 namespace bot
 {
-    Bot::Bot(const std::string &jid, const std::string &password,
-        const std::string &resource)
-        :client(new gloox::Client(gloox::JID(jid), password)),
-        connectionHandler(new ConnectionHandler(*client)),
-        messageSessionHandler(new MessageSessionHandler())
+    Bot::Bot(const std::string &tasksFile,
+        const std::string &jid, const std::string &password,
+        const std::string &resource, const std::string &room)
+        :taskProvider(new task::TaskProvider(tasksFile)),
+        client(new gloox::Client(gloox::JID(jid), password)),
+        connectionHandler(new ConnectionHandler(*client, *taskProvider, room)),
+        messageSessionHandler(new MessageSessionHandler(*taskProvider))
     {
         client->setResource(resource);
         client->registerConnectionListener(connectionHandler.get());

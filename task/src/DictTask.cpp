@@ -9,7 +9,7 @@
 namespace task
 {
     DictTask::DictTask(const StringCollection &keys, const StringCollection &values)
-        :keys(keys.begin(), keys.end()), values(values)
+        :keys(keys), values(values), answers(keys.begin(), keys.end())
     {
         if(values.empty())
             throw std::runtime_error("task values are empty");
@@ -17,18 +17,18 @@ namespace task
 
     bool DictTask::validate(const core::String &result) const
     {
-        return keys.find(result) != keys.end();
+        return answers.find(result) != answers.end();
     }
 
     core::String DictTask::answer() const
     {
         return base::strutil::join(keys.begin(), keys.end(),
-            core::String(L", "));
+            core::String(L","));
     }
 
     void DictTask::describe(core::IRender &render) const
     {
-        render.showTask(base::strutil::join(values.begin(), values.end(),
-                core::String(L", ")));
+        render.addText(base::strutil::join(values.begin(), values.end(),
+                core::String(L",")));
     }
 }

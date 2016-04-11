@@ -22,7 +22,7 @@ namespace task
     class DictTaskGenerator: public core::ITaskGenerator
     {
     public:
-        typedef std::vector<std::pair<core::String, StringCollection>> TaskCollection;
+        typedef std::vector<std::pair<StringCollection, StringCollection>> TaskCollection;
 
     public:
         DictTaskGenerator(unsigned int seed, const TaskCollection &tasks,

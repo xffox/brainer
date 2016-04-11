@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <functional>
+#include <string>
 
 #include "core/ITaskProvider.h"
 
@@ -11,7 +12,7 @@ namespace task
     class TaskProvider: public core::ITaskProvider
     {
     public:
-        TaskProvider();
+        TaskProvider(const std::string &configFilename);
 
         virtual StringSet getTasks() const;
         // throw exception

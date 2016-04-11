@@ -6,12 +6,16 @@
 
 #include <gloox/messagesessionhandler.h>
 
+#include "task/TaskProvider.h"
 #include "MessageHandler.h"
 
 namespace bot
 {
     class MessageSessionHandler: public gloox::MessageSessionHandler
     {
+    public:
+        MessageSessionHandler(task::TaskProvider &taskProvider);
+
     protected:
         virtual void handleMessageSession(gloox::MessageSession *session);
 
@@ -20,6 +24,8 @@ namespace bot
             std::vector<std::shared_ptr<MessageHandler>>;
 
     private:
+        task::TaskProvider &taskProvider;
+
         MessageHandlerCollection messageHandlers;
     };
 }

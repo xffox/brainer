@@ -5,11 +5,16 @@
 
 namespace bot
 {
+    MessageSessionHandler::MessageSessionHandler(task::TaskProvider &taskProvider)
+        :taskProvider(taskProvider)
+    {}
+
     void MessageSessionHandler::handleMessageSession(
         gloox::MessageSession *session)
     {
         assert(session);
-        std::shared_ptr<MessageHandler> handler(new MessageHandler(session));
+        std::shared_ptr<MessageHandler> handler(new MessageHandler(*session,
+                taskProvider));
         session->registerMessageHandler(handler.get());
         try
         {

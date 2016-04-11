@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.6)
 set(TASK_NAME task)
 
 set(TASK_INCLUDES 
-    "${CMAKE_SOURCE_DIR}/task/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
     ${CORE_INCLUDES}
     ${CSV_INCLUDES}
     )

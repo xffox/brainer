@@ -36,7 +36,9 @@ namespace task
                 auto values = base::strutil::split(
                     row.first[2].begin(), row.first[2].end(), L',');
                 std::transform(values.begin(), values.end(), values.begin(), trim);
-                result.push_back(std::make_pair(row.first[0], values));
+                auto prons = base::strutil::split(
+                    row.first[1].begin(), row.first[1].end(), L',');
+                result.push_back(std::make_tuple(row.first[0], prons, values));
             }
             return result;
         }

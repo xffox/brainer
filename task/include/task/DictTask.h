@@ -22,8 +22,9 @@ namespace task
         using StringSet = std::unordered_set<core::String>;
 
     private:
-        StringSet keys;
+        StringCollection keys;
         StringCollection values;
+        StringSet answers;
     };
 }
 

@@ -40,9 +40,7 @@ namespace gui
         void entered(const QString &value);
 
     protected:
-        virtual void showTask(const core::String &str);
-        virtual void showInvalid(const core::String &str);
-        virtual void showAnswer(const core::String &str);
+        virtual void addText(const core::String &str);
 
     private slots:
         void validate();
@@ -52,10 +50,14 @@ namespace gui
     private:
         void connectToSignals();
 
-        void displayTask(const QString &task);
+        void describeTask();
+
         void showStats();
-        void showInvalid(const QString &str);
         void showElapsed(long long elapsedUs);
+
+        void showValid(const core::String &str);
+        void showInvalid(const core::String &str);
+        void showAnswer(const core::String &str);
 
         void clearResult();
         QString getResult() const;

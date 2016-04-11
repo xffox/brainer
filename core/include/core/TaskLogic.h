@@ -22,12 +22,12 @@ namespace core
         using StatsCol = std::vector<Stats>;
 
     public:
-        TaskLogic(std::unique_ptr<ITaskGenerator> taskGenerator,
-            IRender &render);
+        TaskLogic(std::unique_ptr<ITaskGenerator> taskGenerator);
         ~TaskLogic();
 
         bool validate(const String &result);
-        void skip();
+        void describe(IRender &render);
+        String skip();
 
         long long elapsed() const;
 
@@ -37,8 +37,6 @@ namespace core
         void generate();
         
     private:
-        IRender &render;
-
         std::unique_ptr<Stopwatch> stopwatch;
 
         std::unique_ptr<ITaskGenerator> taskGenerator;

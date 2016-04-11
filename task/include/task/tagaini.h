@@ -2,7 +2,7 @@
 #define TASK_TAGAINI_H
 
 #include <vector>
-#include <utility>
+#include <tuple>
 #include <istream>
 
 #include "core/String.h"
@@ -12,7 +12,8 @@ namespace task
 {
     namespace tagaini
     {
-        using TaskCollection = std::vector<std::pair<core::String, StringCollection>>;
+        using TaskCollection = std::vector<std::tuple<core::String,
+              StringCollection, StringCollection>>;
 
         TaskCollection readCollection(std::wistream &stream);
     }

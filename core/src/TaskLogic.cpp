@@ -10,9 +10,8 @@
 namespace core
 {
     // TODO: null exception
-    TaskLogic::TaskLogic(std::unique_ptr<ITaskGenerator> taskGenerator,
-        IRender &render)
-        :render(render), stopwatch(new Stopwatch()),
+    TaskLogic::TaskLogic(std::unique_ptr<ITaskGenerator> taskGenerator)
+        :stopwatch(new Stopwatch()),
         taskGenerator(std::move(taskGenerator)),
         currentTask(), current(), stats()
     {
@@ -36,7 +35,6 @@ namespace core
         currentTask.reset(taskGenerator->generateTask().release());
         assert(currentTask.get());
         stopwatch->reset();
-        currentTask->describe(render);
     }
 
     bool TaskLogic::validate(const String &result)
@@ -54,7 +52,6 @@ namespace core
             {
                 if(!current.isNull())
                     current->tries += 1;
-                render.showInvalid(result);
             }
             return res;
         }
@@ -62,11 +59,21 @@ namespace core
         return false;
     }
 
-    void TaskLogic::skip()
+    String TaskLogic::skip()
+    {
+        String answer;
+        if(currentTask.get())
+            answer = currentTask->answer();
+        generate();
+        return answer;
+    }
+
+    void TaskLogic::describe(IRender &render)
     {
         if(currentTask.get())
-            render.showAnswer(currentTask->answer());
-        generate();
+        {
+            currentTask->describe(render);
+        }
     }
 
     long long TaskLogic::elapsed() const

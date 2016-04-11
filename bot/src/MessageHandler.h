@@ -7,35 +7,36 @@
 
 #include "task/TaskProvider.h"
 #include "core/TaskLogic.h"
-#include "core/IRender.h"
+#include "core/String.h"
 
 namespace bot
 {
-    class MessageHandler: public gloox::MessageHandler, public core::IRender
+    class MessageHandler: public gloox::MessageHandler
     {
     public:
-        MessageHandler(gloox::MessageSession *session);
+        MessageHandler(gloox::MessageSession &session,
+            task::TaskProvider &taskProvider);
 
     protected:
         virtual void handleMessage(const gloox::Message& msg,
             gloox::MessageSession *session);
 
-        virtual void showTask(const core::String &str);
-        virtual void showInvalid(const core::String &str);
-        virtual void showAnswer(const core::String &str);
-
     private:
         bool playTasks(const std::string &name);
         void quitTasks();
-        void listTasks();
 
+        void sendTask(core::TaskLogic &logic);
+        void sendInvalid(const core::String &str);
+        void sendAnswer(const core::String &str);
+
+        void listTasks();
         void sendNormHelp();
         void sendPlayHelp();
 
     private:
-        gloox::MessageSession *session;
+        gloox::MessageSession &session;
+        task::TaskProvider &taskProvider;
 
-        std::unique_ptr<task::TaskProvider> taskProvider;
         std::unique_ptr<core::TaskLogic> taskLogic;
     };
 }
