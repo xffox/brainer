@@ -14,6 +14,7 @@
 #include "task/HexByteTaskGenerator.h"
 #include "task/ArithmeticTaskGenerator.h"
 #include "task/DictTaskGenerator.h"
+#include "task/MultiLetterTaskGenerator.h"
 #include "task/StringCollection.h"
 #include "task/tagaini.h"
 #include "csv/csv.h"
@@ -61,6 +62,18 @@ namespace task
                 std::back_inserter(res), [](
                     const base::IConfig::ValuesCollection::value_type &p) {
                     return std::make_pair(StringCollection{p.second}, StringCollection{p.first});
+                });
+            return res;
+        }
+
+        MultiLetterTaskGenerator::LetterCol readMultiLetterTasksFromConfig(
+            const base::IConfig::ValuesCollection &config)
+        {
+            MultiLetterTaskGenerator::LetterCol res;
+            std::transform(config.begin(), config.end(),
+                std::back_inserter(res), [](
+                    const base::IConfig::ValuesCollection::value_type &p) {
+                    return std::make_pair(p.second, p.first);
                 });
             return res;
         }
@@ -171,6 +184,17 @@ namespace task
                         return std::unique_ptr<core::ITaskGenerator>(
                             new DictTaskGenerator(rand(),
                                 readTagainiWithProns(filename), true));
+                        }));
+            }
+            else if(taskConfig.type == "multiletter")
+            {
+                const auto filename = taskConfig.filename;
+                tasks.insert(std::make_pair(
+                        taskConfig.name, [filename]() {
+                        base::FileConfig fc(filename);
+                        return std::unique_ptr<core::ITaskGenerator>(
+                            new MultiLetterTaskGenerator(rand(),
+                                readMultiLetterTasksFromConfig(fc.read())));
                         }));
             }
         }
