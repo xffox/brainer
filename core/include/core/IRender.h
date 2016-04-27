@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "core/String.h"
+
 namespace core
 {
     class IRender
@@ -10,7 +12,7 @@ namespace core
     public:
         virtual ~IRender(){}
         
-        virtual void addText(const std::string &str) = 0;
+        virtual void addText(const String &str) = 0;
     };
 }
 

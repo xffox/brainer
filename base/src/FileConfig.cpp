@@ -2,7 +2,8 @@
 
 #include <string>
 #include <fstream>
-#include <exception>
+#include <stdexcept>
+#include <locale>
 
 namespace base
 {
@@ -11,11 +12,12 @@ namespace base
     {
     }
 
-    IConfig::ValuesMap FileConfig::read()
+    IConfig::ValuesCollection FileConfig::read()
     {
-        std::ifstream stream(filename.c_str());
+        std::wifstream stream(filename.c_str());
+        stream.imbue(std::locale(std::locale("")));
         if(!stream.is_open())
-            throw std::exception();
+            throw std::runtime_error("can't read file");
         return readStream(stream);
     }
 }

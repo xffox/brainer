@@ -2,136 +2,147 @@
 
 #include <numeric>
 #include <QShortcut>
+#include <stdexcept>
 
 #include "core/IRender.h"
 #include "core/ITaskGenerator.h"
 #include "core/TaskLogic.h"
-#include "core/ITaskLogicWatcher.h"
-#include "task/StatsTaskLogicWatcher.h"
 
 namespace gui
 {
-    namespace
-    {
-        class Render: public core::IRender
-        {
-        public:
-            Render(QLabel &edit)
-                :edit(edit)
-            {}
-
-            virtual void addText(const std::string &str)
-            {
-                edit.setText(QString(str.c_str()));
-            }
-
-        private:
-            QLabel &edit;
-        };
-    }
-
-    namespace
-    {
-        double average(
-            const task::StatsTaskLogicWatcher::TimeCollection &times)
-        {
-            if(!times.empty())
-            {
-                return static_cast<double>(std::accumulate(times.begin(),
-                        times.end(), 0))/times.size();
-            }
-            return 0.0;
-        }
-    }
-
-    TaskDialog::TaskDialog(std::auto_ptr<core::ITaskGenerator> taskGenerator,
-        QWidget *parent)
+    TaskDialog::TaskDialog(QWidget *parent)
         :QDialog(parent),
+        logic(),
         doneShortcut(new QShortcut(QKeySequence("Ctrl+D"), this)),
         skipShortcut(new QShortcut(QKeySequence("Ctrl+S"), this)),
-        timer(new QTimer(this)),
-        statsWatcher(new task::StatsTaskLogicWatcher()),
-        taskLogic(new core::TaskLogic(taskGenerator, statsWatcher.get()))
+        timer(new QTimer(this))
     {
         ui.setupUi(this);
 
         timer->setSingleShot(false);
-        timer->start(100);
 
         connectToSignals();
-
-        generate();
     }
 
     TaskDialog::~TaskDialog()
     {
     }
 
-    void TaskDialog::validate()
+    void TaskDialog::setTaskGenerator(
+        std::unique_ptr<core::ITaskGenerator> taskGenerator)
     {
-        const QString &result = getResult();
-        if(!result.isEmpty())
-        {
-            Q_ASSERT(taskLogic.get());
-            if(taskLogic->validate(qPrintable(result)))
-                generate();
-            else
-                showInvalid(result);
-            showStats();
-        }
+        this->logic.reset(new core::TaskLogic(std::move(taskGenerator)));
+        clearStatus();
+        describeTask();
     }
 
-    void TaskDialog::generate()
+    void TaskDialog::addText(const core::String &str)
     {
-        Q_ASSERT(taskLogic.get());
-        taskLogic->generate();
-        showTask();
-        showStats();
-        clearStatus();
+        task = QString::fromStdWString(str);
+        ui.taskLabel->setText(task);
+    }
+
+    void TaskDialog::showInvalid(const core::String &str)
+    {
+        setStatus(QString("%1 is WRONG").arg(QString::fromStdWString(str)));
         clearResult();
     }
 
-    void TaskDialog::showTime()
+    void TaskDialog::showValid(const core::String &str)
     {
-        Q_ASSERT(taskLogic.get());
-        ui.timeLabel->setText(QString::number(taskLogic->elapsed()/1000000) +
-            's');
+        setStatus(QString("%1 is RIGHT").arg(QString::fromStdWString(str)));
+        clearResult();
     }
 
-    void TaskDialog::showTask()
+    void TaskDialog::showAnswer(const core::String &str)
     {
-        Render render(*ui.taskLabel);
-        Q_ASSERT(taskLogic.get());
-        taskLogic->describe(render);
+        setStatus(QString("\"%1\" is \"%2\"").arg(QString::fromStdWString(str)).arg(task));
+    }
+
+    void TaskDialog::validate()
+    {
+        if(!getResult().isEmpty())
+        {
+            clearStatus();
+            if(logic.get())
+            {
+                const auto answer = getResult().toStdWString();
+                if(logic->validate(answer))
+                {
+                    describeTask();
+                    showValid(answer);
+                }
+                else
+                {
+                    showInvalid(answer);
+                }
+            }
+        }
+    }
+
+    void TaskDialog::skip()
+    {
+        if(logic.get())
+            showAnswer(logic->skip());
+        describeTask();
+    }
+
+    void TaskDialog::timed()
+    {
+        if(logic.get())
+            showElapsed(logic->elapsed());
     }
 
     void TaskDialog::showStats()
     {
-        Q_ASSERT(statsWatcher.get());
-        ui.tasksLabel->setText(QString::number(statsWatcher->getTasksCount()));
-        ui.validLabel->setText(QString::number(statsWatcher->getValidCount()));
-        ui.triesLabel->setText(QString::number(
-                statsWatcher->getTriesCount()));
-        ui.avTimeLabel->setText(QString::number(
-                average(statsWatcher->getValidTimes())/1000000.0, 'f', 2) +
-            's');
-    }
-
-    void TaskDialog::showInvalid(const QString &str)
-    {
-        setStatus("!" + str);
-        clearResult();
+        if(logic.get())
+        {
+            int validCount = 0;
+            int triesCount = 0;
+            long long totalTimeUs = 0;
+            const auto &stats = logic->getStats();
+            int taskCount = stats.size();
+            for(const auto &s : stats)
+            {
+                if(s.answered)
+                    ++validCount;
+                triesCount += s.tries;
+                totalTimeUs += s.timeUs;
+            }
+            ui.tasksLabel->setText(QString::number(taskCount));
+            ui.validLabel->setText(QString::number(validCount));
+            ui.triesLabel->setText(QString::number(triesCount));
+            if(taskCount > 0)
+                ui.avTimeLabel->setText(QString::number(
+                        totalTimeUs/1000000.0/taskCount, 'f', 2) + 's');
+            else
+                ui.avTimeLabel->setText("");
+        }
     }
 
     void TaskDialog::connectToSignals()
     {
-        connect(ui.resultEdit, SIGNAL(returnPressed()),
-            this, SLOT(validate()));
+        // TODO: need this?
+//      connect(ui.resultEdit, SIGNAL(returnPressed()),
+//          this, SLOT(validate()));
         connect(ui.doneButton, SIGNAL(clicked()), this, SLOT(validate()));
-        connect(ui.skipButton, SIGNAL(clicked()), this, SLOT(generate()));
+        connect(ui.skipButton, SIGNAL(clicked()), this, SLOT(skip()));
         connect(doneShortcut, SIGNAL(activated()), this, SLOT(validate()));
-        connect(skipShortcut, SIGNAL(activated()), this, SLOT(generate()));
-        connect(timer, SIGNAL(timeout()), this, SLOT(showTime()));
+        connect(skipShortcut, SIGNAL(activated()), this, SLOT(skip()));
+        connect(timer, SIGNAL(timeout()), this, SLOT(timed()));
+    }
+
+    void TaskDialog::describeTask()
+    {
+        Q_ASSERT(timer);
+        timer->start(300);
+        showStats();
+        clearResult();
+        showElapsed(0);
+        if(logic.get())
+        {
+            logic->describe(*this);
+        }
     }
 
     void TaskDialog::clearResult()
@@ -152,5 +163,11 @@ namespace gui
     void TaskDialog::setStatus(const QString &str)
     {
         ui.statusLabel->setText(str);
+    }
+
+    void TaskDialog::showElapsed(long long elapsedUs)
+    {
+        ui.timeLabel->setText(QString::number(elapsedUs/1000000) +
+            's');
     }
 }

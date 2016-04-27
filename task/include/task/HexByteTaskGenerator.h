@@ -11,7 +11,7 @@ namespace task
     public:
         HexByteTaskGenerator(unsigned int seed);
 
-        virtual std::auto_ptr<core::ITask> generateTask();
+        virtual std::unique_ptr<core::ITask> generateTask();
     };
 }
 

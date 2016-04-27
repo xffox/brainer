@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "base/StringValue.h"
+#include "core/String.h"
 
 namespace core
 {
@@ -12,13 +12,11 @@ namespace core
     class ITask
     {
     public:
-        typedef base::StringValue ValueType;
-
-    public:
         virtual ~ITask(){}
         
-        virtual bool validate(const ValueType &result) = 0;
-        virtual void describe(IRender &render) = 0;
+        virtual bool validate(const String &result) const = 0;
+        virtual String answer() const = 0;
+        virtual void describe(IRender &render) const = 0;
     };
 }
 

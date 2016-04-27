@@ -1,0 +1,6 @@
+[submodule "xlog"]
+	path = xlog
+	url = /home/fox/dvp/xlog
+[submodule "serialization"]
+	path = serialization
+	url = /home/fox/dvp/serialization

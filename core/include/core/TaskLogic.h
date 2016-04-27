@@ -2,7 +2,11 @@
 #define CORE_TASKLOGIC_H
 
 #include <memory>
-#include <string>
+#include <vector>
+
+#include "base/Nullable.h"
+#include "core/String.h"
+#include "core/Stats.h"
 
 namespace core
 {
@@ -15,25 +19,33 @@ namespace core
     class TaskLogic
     {
     public:
-        TaskLogic(std::auto_ptr<ITaskGenerator> taskGenerator,
-            ITaskLogicWatcher *watcher = 0);
+        using StatsCol = std::vector<Stats>;
+
+    public:
+        TaskLogic(std::unique_ptr<ITaskGenerator> taskGenerator);
         ~TaskLogic();
 
-        void generate();
-        bool validate(const std::string &result);
-
+        bool validate(const String &result);
         void describe(IRender &render);
+        String skip();
 
         long long elapsed() const;
+
+        const StatsCol &getStats() const;
+
+    private:
+        void generate();
         
     private:
-        std::auto_ptr<Stopwatch> stopwatch;
+        std::unique_ptr<Stopwatch> stopwatch;
 
-        std::auto_ptr<ITaskGenerator> taskGenerator;
+        std::unique_ptr<ITaskGenerator> taskGenerator;
 
-        ITaskLogicWatcher *watcher;
+        std::unique_ptr<ITask> currentTask;
 
-        std::auto_ptr<ITask> currentTask;
+        // TODO: put to stats, use last as current
+        base::Nullable<Stats> current;
+        StatsCol stats;
     };
 }
 

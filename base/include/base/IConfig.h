@@ -2,20 +2,21 @@
 #define BASE_ICONFIG_H
 
 #include <string>
-#include <map>
+#include <vector>
 
 namespace base
 {
     class IConfig
     {
     public:
-        typedef std::map<std::string, std::string> ValuesMap;
+        typedef std::pair<std::wstring, std::wstring> ValuePair;
+        typedef std::vector<ValuePair> ValuesCollection;
 
     public:
         virtual ~IConfig(){}
 
         // throw std::exception on error
-        virtual ValuesMap read() = 0;
+        virtual ValuesCollection read() = 0;
     };
 }
 

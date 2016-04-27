@@ -1,60 +1,70 @@
 #include "task/DictTaskGenerator.h"
 
+#include <algorithm>
 #include <cassert>
-#include <exception>
+#include <stdexcept>
 #include <memory>
 #include <cstdlib>
 #include <iterator>
 
 #include "task/DictTask.h"
-#include "core/IDictProvider.h"
-#include "core/IIterator.h"
 
 namespace task
 {
     DictTaskGenerator::DictTaskGenerator(unsigned int seed,
-        std::auto_ptr<core::IDictProvider> provider)
-        :keys(), provider(provider)
+        const TaskCollection &tasks, bool reversed)
+        :tasks(), reversed(reversed), indices(),
+        excludedSize(tasks.size()/2), excludedIndices()
     {
-        if(!this->provider.get())
-            // TODO: exception
-            throw std::exception();
+        std::copy_if(tasks.begin(), tasks.end(),
+            std::back_inserter(this->tasks),
+            [](const TaskCollection::value_type &p){return !p.second.empty();});
+        if(this->tasks.empty())
+            throw std::runtime_error("no suitable tasks");
+        for(std::size_t i = 0; i < this->tasks.size(); ++i)
+            indices.push_back(i);
         srand(seed);
-        readKeys();
     }
 
     DictTaskGenerator::~DictTaskGenerator()
     {
     }
 
-    void DictTaskGenerator::readKeys()
+    std::unique_ptr<core::ITask> DictTaskGenerator::generateTask()
     {
-        assert(provider.get());
-        std::auto_ptr<core::IIterator<std::string> > iter = provider->keys();
-        assert(iter.get());
-        const std::string *k = 0;
-        keys.clear();
-        while((k = iter->next()))
-            keys.push_back(*k);
-    }
-
-    std::auto_ptr<core::ITask> DictTaskGenerator::generateTask()
-    {
-        if(!keys.empty())
+        if(!tasks.empty())
         {
-            assert(provider.get());
-            std::size_t pos = rand()%keys.size();
-            const std::string &k = keys[pos];
+            std::size_t pos = rand()%indices.size();
+            const auto idx = indices[pos];
+            if(excludedSize > 0)
+            {
+                if(excludedIndices.size() < excludedSize)
+                {
+                    indices.erase(indices.begin()+pos);
+                }
+                else
+                {
+                    const auto excludedIdx = excludedIndices.front();
+                    excludedIndices.pop();
+                    indices[pos] = excludedIdx;
+                }
+                excludedIndices.push(idx);
+            }
             try
             {
-                return std::auto_ptr<core::ITask>(new DictTask(k,
-                        provider->get(k)));
+                const auto &p = tasks[idx];
+                if(!reversed)
+                    return std::unique_ptr<core::ITask>(
+                        new DictTask(p.first, p.second));
+                else
+                    return std::unique_ptr<core::ITask>(
+                        new DictTask(p.second, p.first));
             }
             catch(const std::exception&)
             {
             }
         }
         // TODO: exception
-        return std::auto_ptr<core::ITask>();
+        return std::unique_ptr<core::ITask>();
     }
 }

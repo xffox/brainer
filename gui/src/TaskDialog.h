@@ -1,11 +1,22 @@
+#ifndef GUI_TASKDIALOG_H
+#define GUI_TASKDIALOG_H
+
 #include <QDialog>
 #include <QTimer>
 
 #include <memory>
 
+#include "core/Stats.h"
+#include "core/IRender.h"
+
 #include "ui_TaskDialog.h"
 
 class QShortcut;
+
+namespace task
+{
+    class StatsTaskLogicWatcher;
+}
 
 namespace core
 {
@@ -13,32 +24,40 @@ namespace core
     class TaskLogic;
 }
 
-namespace task
-{
-    class StatsTaskLogicWatcher;
-}
-
 namespace gui
 {
-    class TaskDialog: public QDialog
+    class TaskDialog: public QDialog, core::IRender
     {
         Q_OBJECT
     public:
-        TaskDialog(std::auto_ptr<core::ITaskGenerator> taskGenerator,
-            QWidget *parent = 0);
+        TaskDialog(QWidget *parent = 0);
         virtual ~TaskDialog();
+
+        void setTaskGenerator(
+            std::unique_ptr<core::ITaskGenerator> taskGenerator);
+
+    signals:
+        void entered(const QString &value);
+
+    protected:
+        virtual void addText(const core::String &str);
 
     private slots:
         void validate();
-        void generate();
-        void showTime();
+        void skip();
+        void timed();
 
     private:
         void connectToSignals();
 
-        void showTask();
+        void describeTask();
+
         void showStats();
-        void showInvalid(const QString &str);
+        void showElapsed(long long elapsedUs);
+
+        void showValid(const core::String &str);
+        void showInvalid(const core::String &str);
+        void showAnswer(const core::String &str);
 
         void clearResult();
         QString getResult() const;
@@ -47,6 +66,8 @@ namespace gui
         void setStatus(const QString &str);
 
     private:
+        std::unique_ptr<core::TaskLogic> logic;
+
         Ui::TaskDialog ui;
 
         QShortcut *doneShortcut;
@@ -54,7 +75,8 @@ namespace gui
 
         QTimer *timer;
 
-        std::auto_ptr<task::StatsTaskLogicWatcher> statsWatcher;
-        std::auto_ptr<core::TaskLogic> taskLogic;
+        QString task;
     };
 }
+
+#endif

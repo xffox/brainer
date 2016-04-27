@@ -4,15 +4,20 @@
 #include <iomanip>
 #include <limits>
 #include <bitset>
+#include <sstream>
+#include <iomanip>
 
 #include "core/IRender.h"
+#include "util.h"
 
 namespace task
 {
-    bool HexByteTask::validate(const ValueType &result)
+    bool HexByteTask::validate(const core::String &result) const
     {
-        const std::string str = result;
-        const char *const s = str.c_str();
+        std::string regStr;
+        if(!util::toRegularStr(regStr, result))
+            return false;
+        const char *const s = regStr.c_str();
         char *endptr = 0;
         unsigned long res = std::strtoul(s, &endptr, 16);
         if(endptr != 0 && *endptr == '\0')
@@ -25,9 +30,17 @@ namespace task
         return false;
     }
 
-    void HexByteTask::describe(core::IRender &render)
+    core::String HexByteTask::answer() const
+    {
+        std::wstringstream stream;
+        stream<<std::hex;
+        stream<<value;
+        return stream.str();
+    }
+
+    void HexByteTask::describe(core::IRender &render) const
     {
         std::bitset<8> s(value);
-        render.addText(s.to_string());
+        render.addText(util::toWString(s.to_string()));
     }
 }

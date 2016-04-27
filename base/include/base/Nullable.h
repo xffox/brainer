@@ -1,7 +1,7 @@
 #ifndef BASE_NULLABLE_H
 #define BASE_NULLABLE_H
 
-#include <exception>
+#include <stdexcept>
 
 namespace base
 {
@@ -62,8 +62,7 @@ namespace base
     {
         if(!nulled)
             return value;
-        // TODO: right exception
-        throw std::exception();
+        throw std::invalid_argument("null object");
     }
 
     template<typename T>

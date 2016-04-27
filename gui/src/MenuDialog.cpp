@@ -1,5 +1,6 @@
 #include "MenuDialog.h"
 
+// TODO: cleanup
 #include <algorithm>
 #include <cassert>
 #include <ctime>
@@ -7,60 +8,72 @@
 #include <iterator>
 #include <memory>
 #include <utility>
-#include <QtGui/QFileDialog>
 
-#include "core/FileDictProvider.h"
+#include <QPushButton>
+#include <QMessageBox>
+
 #include "TaskDialog.h"
-#include "task/DictTaskGenerator.h"
-#include "task/HexByteTaskGenerator.h"
-#include "task/MultiplicationTaskGenerator.h"
+#include "core/ITaskProvider.h"
+#include "core/ITaskGenerator.h"
 
 namespace gui
 {
-    MenuDialog::MenuDialog(QWidget *parent)
-        :QDialog(parent)
+    namespace
+    {
+        const char *TASK_PROPERTY = "task";
+    }
+
+    MenuDialog::MenuDialog(std::unique_ptr<core::ITaskProvider> taskProvider,
+        QWidget *parent)
+        :QDialog(parent), taskProvider(std::move(taskProvider))
     {
         ui.setupUi(this);
 
-        connectToSignals();
-    }
-
-    void MenuDialog::onHexByte()
-    {
-        TaskDialog *dialog =
-            new TaskDialog(std::auto_ptr<core::ITaskGenerator>(
-                    new task::HexByteTaskGenerator(time(0))));
-        dialog->show();
-    }
-
-    void MenuDialog::onMultiplication()
-    {
-        TaskDialog *dialog =
-            new TaskDialog(std::auto_ptr<core::ITaskGenerator>(
-                    new task::MultiplicationTaskGenerator(time(0))));
-        dialog->show();
-    }
-
-    void MenuDialog::onDict()
-    {
-        const QString path = QFileDialog::getOpenFileName(this);
-        if(!path.isEmpty())
+        if(this->taskProvider.get())
         {
-            TaskDialog *dialog =
-                new TaskDialog(std::auto_ptr<core::ITaskGenerator>(
-                        new task::DictTaskGenerator(time(0),
-                            std::auto_ptr<core::IDictProvider>(
-                                new core::FileDictProvider(qPrintable(path))))
-                        ));
-            dialog->show();
+            const core::ITaskProvider::StringSet tasks = this->taskProvider->getTasks();
+            QStringList names;
+            for(core::ITaskProvider::StringSet::const_iterator iter =
+                tasks.begin(), endIter = tasks.end(); iter != endIter; ++iter)
+                names.push_back(QString(iter->c_str()));
+            showTasks(names);
         }
     }
 
-    void MenuDialog::connectToSignals()
+    MenuDialog::~MenuDialog()
     {
-        connect(ui.hexByteButton, SIGNAL(clicked()), this, SLOT(onHexByte()));
-        connect(ui.multiplicationButton, SIGNAL(clicked()), this,
-            SLOT(onMultiplication()));
-        connect(ui.dictButton, SIGNAL(clicked()), this, SLOT(onDict()));
+    }
+
+    void MenuDialog::showTasks(const QStringList &tasks)
+    {
+        QLayoutItem *child = 0;
+        while((child = ui.taskLayout->takeAt(0)))
+            delete child;
+        for(QStringList::const_iterator iter = tasks.begin(),
+            endIter = tasks.end(); iter != endIter; ++iter)
+        {
+            QPushButton *button  = new QPushButton(*iter, this);
+            button->setProperty(TASK_PROPERTY, *iter);
+            ui.taskLayout->addWidget(button);
+            connect(button, SIGNAL(clicked()), this, SLOT(onSelected()));
+        }
+    }
+
+    void MenuDialog::onSelected()
+    {
+        QObject *const button = sender();
+        Q_ASSERT(button);
+        if(taskProvider.get())
+        {
+            try
+            {
+                taskDialog.setTaskGenerator(taskProvider->create(qPrintable(button->property(TASK_PROPERTY).toString())));
+                taskDialog.show();
+            }
+            catch(const std::exception &exc)
+            {
+                QMessageBox::critical(this, "error", exc.what());
+            }
+        }
     }
 }

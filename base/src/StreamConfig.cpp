@@ -13,78 +13,76 @@ namespace base
 {
     namespace
     {
-        typedef std::pair<std::string, std::string> ValuePair;
-
-        std::string trim(const std::string &str)
+        std::wstring trim(const std::wstring &str)
         {
             if(!str.empty())
             {
-                std::string::size_type i = 0;
-                while(i < str.size() && isspace(str[i]))
+                std::wstring::size_type i = 0;
+                while(i < str.size() && iswspace(str[i]))
                     ++i;
-                std::string::size_type j = str.size();
-                while(j-1 > i && isspace(str[j-1]))
+                std::wstring::size_type j = str.size();
+                while(j-1 > i && iswspace(str[j-1]))
                     --j;
                 return str.substr(i, j-i);
             }
             return str;
         }
 
-        bool isComment(const std::string &line)
+        bool isComment(const std::wstring &line)
         {
-            std::string::size_type i = 0;
-            while(i < line.size() && isspace(line[i]))
+            std::wstring::size_type i = 0;
+            while(i < line.size() && iswspace(line[i]))
                 ++i;
-            return (i < line.size() && line[i] == '#');
+            return (i < line.size() && line[i] == L'#');
         }
 
-        base::Nullable<ValuePair> parseLine(const std::string &line)
+        base::Nullable<IConfig::ValuePair> parseLine(const std::wstring &line)
         {
             if (!isComment(line))
             {
-                std::string::size_type sep = line.find('=');
-                if(sep != std::string::npos)
+                std::wstring::size_type sep = line.find(L'=');
+                if(sep != std::wstring::npos)
                 {
                     return std::make_pair(trim(line.substr(0, sep)),
-                        trim(line.substr(sep+1, std::string::npos)));
+                        trim(line.substr(sep+1, std::wstring::npos)));
                 }
             }
-            return base::Nullable<ValuePair>();
+            return base::Nullable<IConfig::ValuePair>();
         }
     }
 
-    IConfig::ValuesMap StreamConfig::readStream(std::istream &stream)
+    IConfig::ValuesCollection StreamConfig::readStream(std::wistream &stream)
     {
-        IConfig::ValuesMap values;
+        IConfig::ValuesCollection values;
 
         const std::size_t BUF_SZ = 4096; 
-        char buf[BUF_SZ];
-        std::string line;
+        wchar_t buf[BUF_SZ];
+        std::wstring line;
         do
         {
-            stream.read(buf, sizeof(buf));
+            stream.read(buf, sizeof(buf)/sizeof(buf[0]));
             const std::streamsize len = stream.gcount();
             if(len > 0)
             {
-                char *begin = &buf[0];
-                char *end = 0;
-                while((end = std::find(begin, &buf[len], '\n')) !=
+                wchar_t *begin = &buf[0];
+                wchar_t *end = &buf[len];
+                while((end = std::find(begin, &buf[len], L'\n')) !=
                     &buf[len])
                 {
-                    line+=std::string(begin, end-begin);
+                    line+=std::wstring(begin, end-begin);
                     base::Nullable<ValuePair> valuePair = parseLine(line);
                     if(!valuePair.isNull())
-                        values.insert(*valuePair);
+                        values.push_back(*valuePair);
                     line.clear();
                     begin = end+1;
                 }
-                line+=std::string(begin, end-begin);
+                line+=std::wstring(begin, end-begin);
             }
         }
         while(stream);
         base::Nullable<ValuePair> valuePair = parseLine(line);
         if(!valuePair.isNull())
-            values.insert(*valuePair);
+            values.push_back(*valuePair);
 
         return values;
     }

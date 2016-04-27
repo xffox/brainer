@@ -1,11 +1,7 @@
-#include <QApplication>
-
-#include "MenuDialog.h"
+#include "Application.h"
 
 int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
-    gui::MenuDialog dialog;
-    dialog.show();
+    gui::Application app(argc, argv);
     return app.exec();
 }
