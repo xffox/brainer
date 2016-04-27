@@ -1,6 +1,7 @@
 #include "util.h"
 
 #include <sstream>
+#include <cwctype>
 
 namespace task
 {
@@ -23,6 +24,15 @@ namespace task
             std::wstringstream stream;
             stream<<str.c_str();
             return stream.str();
+        }
+
+        core::String tolower(const core::String &str)
+        {
+            core::String res;
+            std::transform(str.begin(), str.end(),
+                std::back_inserter(res),
+                [](wchar_t c){return std::towlower(c);});
+            return res;
         }
     }
 }

@@ -97,7 +97,7 @@ namespace csv
             {
                 const std::string val("value\\,morevalue");
                 std::stringstream ss(val);
-                Csv<char> csv(ss);
+                Csv<char> csv(ss, ',', '"', '\\');
                 auto res = csv.row();
                 CPPUNIT_ASSERT(res.second);
                 CPPUNIT_ASSERT_EQUAL(static_cast<std::size_t>(1),
@@ -109,14 +109,14 @@ namespace csv
 
             void testSingleQuote()
             {
-                const std::string val("\"value,morevalue\"");
+                const std::string val("row1,row2,\"value,morevalue\"");
                 std::stringstream ss(val);
                 Csv<char> csv(ss);
                 auto res = csv.row();
                 CPPUNIT_ASSERT(res.second);
-                CPPUNIT_ASSERT_EQUAL(static_cast<std::size_t>(1),
+                CPPUNIT_ASSERT_EQUAL(static_cast<std::size_t>(3),
                     res.first.size());
-                CPPUNIT_ASSERT_EQUAL(std::string("value,morevalue"), res.first[0]);
+                CPPUNIT_ASSERT_EQUAL(std::string("value,morevalue"), res.first[2]);
                 res = csv.row();
                 CPPUNIT_ASSERT(!res.second);
             }

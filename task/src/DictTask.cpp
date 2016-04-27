@@ -1,23 +1,28 @@
 #include "task/DictTask.h"
 
 #include <sstream>
+#include <iterator>
 #include <stdexcept>
 
 #include "base/strutil.h"
 #include "core/IRender.h"
 
+#include "util.h"
+
 namespace task
 {
     DictTask::DictTask(const StringCollection &keys, const StringCollection &values)
-        :keys(keys), values(values), answers(keys.begin(), keys.end())
+        :keys(keys), values(values), answers()
     {
-        if(values.empty())
-            throw std::runtime_error("task values are empty");
+        if(values.empty() || keys.empty())
+            throw std::runtime_error("task values or keys are empty");
+        util::toLowerCollection(keys.begin(), keys.end(),
+            std::inserter(answers, answers.begin()));
     }
 
     bool DictTask::validate(const core::String &result) const
     {
-        return answers.find(result) != answers.end();
+        return answers.find(util::tolower(result)) != answers.end();
     }
 
     core::String DictTask::answer() const

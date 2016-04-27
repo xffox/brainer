@@ -2,9 +2,9 @@
 #define BASE_INDEXALLOCATOR_H
 
 #include <set>
-#include <exception>
+#include <stdexcept>
 
-namespace Base
+namespace base
 {
     template<typename Index>
     class IndexAllocator
@@ -46,7 +46,7 @@ namespace Base
         {
             return ++max;
         }
-        throw std::exception();
+        throw std::length_error("all indices allocated");
     }
 
     template<typename Index>
@@ -59,7 +59,7 @@ namespace Base
         }
         else
         {
-            throw std::exception();
+            throw std::invalid_argument("invalid index");
         }
     }
 }

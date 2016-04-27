@@ -7,6 +7,7 @@
 #include <utility>
 #include <cstddef>
 #include <sstream>
+#include <iostream>
 
 namespace csv
 {
@@ -26,9 +27,9 @@ namespace csv
 
     private:
         std::basic_istream<CharT> &stream;
-        char delim;
-        char bracket;
-        char esc;
+        CharT delim;
+        CharT bracket;
+        CharT esc;
         std::size_t lineNumber;
     };
 
@@ -42,14 +43,14 @@ namespace csv
             return res;
         ++lineNumber;
         String cur;
-        bool esc = false;
-        bool quote = false;
+        bool escaped = false;
+        bool quoted = false;
         for(std::size_t i = 0; i < line.size(); ++i)
         {
             const auto v = line[i];
-            if(!esc)
+            if(!escaped)
             {
-                if(!quote)
+                if(!quoted)
                 {
                     if(v != delim)
                     {
@@ -57,23 +58,27 @@ namespace csv
                             (cur.empty() || cur.back() != bracket))
                         {
                             std::stringstream ss;
-                            ss<<"csv parse error for line: "<<lineNumber;
+                            ss<<"csv parse error for line: "
+                                <<"value after bracket is not empty: "
+                                <<lineNumber<<':'<<i;
                             throw std::runtime_error(ss.str());
                         }
                         if(v == esc)
                         {
-                            esc = true;
+                            escaped = true;
                         }
                         else if(v == bracket)
                         {
                             if(cur.empty())
                             {
-                                quote = true;
+                                quoted = true;
                             }
                             else
                             {
                                 std::stringstream ss;
-                                ss<<"csv parse error for line: "<<lineNumber;
+                                ss<<"csv parse error for line: "<<
+                                    "value before bracket is not empty: "
+                                    <<lineNumber<<':'<<i;
                                 throw std::runtime_error(ss.str());
                             }
                         }
@@ -92,7 +97,7 @@ namespace csv
                 {
                     if(v == esc)
                     {
-                        esc = true;
+                        escaped = true;
                     }
                     else if(v == delim)
                     {
@@ -100,7 +105,7 @@ namespace csv
                     }
                     else if(v == bracket)
                     {
-                        quote = false;
+                        quoted = false;
                     }
                     else
                     {
@@ -110,7 +115,7 @@ namespace csv
             }
             else
             {
-                if(!quote)
+                if(!quoted)
                 {
                     if(v == delim || v == esc || v == bracket)
                     {
@@ -119,7 +124,9 @@ namespace csv
                     else
                     {
                         std::stringstream ss;
-                        ss<<"csv parse error for line: "<<lineNumber;
+                        ss<<"csv parse error for line: "
+                            <<"unknown escape char: "<<lineNumber
+                            <<':'<<i;
                         throw std::runtime_error(ss.str());
                     }
                 }
@@ -132,11 +139,13 @@ namespace csv
                     else
                     {
                         std::stringstream ss;
-                        ss<<"csv parse error for line: "<<lineNumber;
+                        ss<<"csv parse error for line: "
+                            <<"unknown escape char: "<<lineNumber
+                            <<':'<<i;
                         throw std::runtime_error(ss.str());
                     }
                 }
-                esc = false;
+                escaped = false;
             }
         }
         res.first.push_back(cur);

@@ -22,8 +22,6 @@ namespace gui
         timer->setSingleShot(false);
 
         connectToSignals();
-
-
     }
 
     TaskDialog::~TaskDialog()
@@ -34,6 +32,7 @@ namespace gui
         std::unique_ptr<core::ITaskGenerator> taskGenerator)
     {
         this->logic.reset(new core::TaskLogic(std::move(taskGenerator)));
+        clearStatus();
         describeTask();
     }
 
@@ -45,19 +44,19 @@ namespace gui
 
     void TaskDialog::showInvalid(const core::String &str)
     {
-        setStatus("!" + QString::fromStdWString(str));
+        setStatus(QString("%1 is WRONG").arg(QString::fromStdWString(str)));
         clearResult();
     }
 
     void TaskDialog::showValid(const core::String &str)
     {
-        setStatus(QString::fromStdWString(str));
+        setStatus(QString("%1 is RIGHT").arg(QString::fromStdWString(str)));
         clearResult();
     }
 
     void TaskDialog::showAnswer(const core::String &str)
     {
-        setStatus(task + "=" + QString::fromStdWString(str));
+        setStatus(QString("\"%1\" is \"%2\"").arg(QString::fromStdWString(str)).arg(task));
     }
 
     void TaskDialog::validate()

@@ -10,6 +10,7 @@
 #include <utility>
 
 #include <QPushButton>
+#include <QMessageBox>
 
 #include "TaskDialog.h"
 #include "core/ITaskProvider.h"
@@ -63,7 +64,16 @@ namespace gui
         QObject *const button = sender();
         Q_ASSERT(button);
         if(taskProvider.get())
-            taskDialog.setTaskGenerator(taskProvider->create(qPrintable(button->property(TASK_PROPERTY).toString())));
-        taskDialog.show();
+        {
+            try
+            {
+                taskDialog.setTaskGenerator(taskProvider->create(qPrintable(button->property(TASK_PROPERTY).toString())));
+                taskDialog.show();
+            }
+            catch(const std::exception &exc)
+            {
+                QMessageBox::critical(this, "error", exc.what());
+            }
+        }
     }
 }

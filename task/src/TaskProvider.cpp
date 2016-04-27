@@ -15,8 +15,11 @@
 #include "task/ArithmeticTaskGenerator.h"
 #include "task/DictTaskGenerator.h"
 #include "task/MultiLetterTaskGenerator.h"
+#include "task/FactTaskGenerator.h"
 #include "task/StringCollection.h"
 #include "task/tagaini.h"
+#include "task/StringSet.h"
+#include "fact/FileFact.h"
 #include "csv/csv.h"
 
 namespace task
@@ -84,7 +87,7 @@ namespace task
             std::wifstream stream(filename);
             stream.imbue(std::locale(std::locale("")));
             if(!stream.is_open())
-                throw std::exception();
+                throw std::runtime_error("can't read file");
             const auto res = tagaini::readCollection(stream);
             DictTaskGenerator::TaskCollection tasks;
             transform(res.begin(), res.end(), std::back_inserter(tasks),
@@ -102,7 +105,7 @@ namespace task
             std::wifstream stream(filename);
             stream.imbue(std::locale(std::locale("")));
             if(!stream.is_open())
-                throw std::exception();
+                throw std::runtime_error("can't read file");
             const auto res = tagaini::readCollection(stream);
             DictTaskGenerator::TaskCollection tasks;
             transform(res.begin(), res.end(), std::back_inserter(tasks),
@@ -195,6 +198,38 @@ namespace task
                         return std::unique_ptr<core::ITaskGenerator>(
                             new MultiLetterTaskGenerator(rand(),
                                 readMultiLetterTasksFromConfig(fc.read())));
+                        }));
+            }
+            else if(taskConfig.type == "fact")
+            {
+                class PropertyPredicate: public FactTaskGenerator::Predicate
+                {
+                public:
+                    PropertyPredicate()
+                        :properties{
+                                L"child astronomical body",
+                                L"parent astronomical body",
+                                L"part of"
+                            }
+                    {}
+
+                    virtual bool accept(const core::String &property) const override
+                    {
+                        return properties.find(property) != properties.end();
+                    }
+
+                private:
+                    task::StringSet properties;
+                };
+                const auto filename = taskConfig.filename;
+                tasks.insert(std::make_pair(
+                        taskConfig.name, [filename]() {
+                        return std::unique_ptr<core::ITaskGenerator>(
+                            new FactTaskGenerator(rand(),
+                                std::unique_ptr<fact::IFact>(
+                                    new fact::FileFact(filename)),
+                                std::unique_ptr<FactTaskGenerator::Predicate>(
+                                    new PropertyPredicate())));
                         }));
             }
         }
