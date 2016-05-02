@@ -1,0 +1,12 @@
+#!/sbin/runscript
+# Copyright 1999-2016 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Id$
+
+pidfile="/var/run/brainer_bot.pid"
+command="/usr/bin/brainer_bot"
+start_stop_daemon_args="-b -m -p ${pidfile} -u ${BRAINER_USER:-brainer}:${BRAINER_GROUP:-brainer}"
+
+depend() {
+	need net
+}
