@@ -42,6 +42,7 @@ if(QT4_FOUND)
     add_executable(${GUI_NAME} ${GUI_SRCS} ${GUI_MOC_SRCS} ${GUI_UI_HDRS})
     target_link_libraries(${GUI_NAME} ${QT_QTMAIN_LIBRARY} ${QT_LIBRARIES}
         ${CORE_LIBS} ${TASK_LIBS} ${BASE_LIBS})
+    install(TARGETS ${GUI_NAME} RUNTIME DESTINATION "bin")
 else()
 	message(FATAL "qt not found - gui not available")
 endif()
