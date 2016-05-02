@@ -8,5 +8,5 @@ command="/usr/bin/brainer_bot"
 start_stop_daemon_args="-b -m -p ${pidfile} -u ${BRAINER_USER:-brainer}:${BRAINER_GROUP:-brainer}"
 
 depend() {
-	need net
+    need net
 }
