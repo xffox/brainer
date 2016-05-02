@@ -1,6 +1,6 @@
 [submodule "xlog"]
 	path = xlog
-	url = /home/fox/dvp/xlog
+	url = git@letun.anondns.net:xlog.git
 [submodule "serialization"]
 	path = serialization
-	url = /home/fox/dvp/serialization
+	url = git@letun.anondns.net:serialization.git
