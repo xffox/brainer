@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 
-set(GUI_NAME brainer)
+set(GUI_NAME brainer_gui)
 
 message(STATUS "gui is enabled")
 
