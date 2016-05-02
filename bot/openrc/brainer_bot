@@ -5,7 +5,8 @@
 
 pidfile="/var/run/brainer_bot.pid"
 command="/usr/bin/brainer_bot"
-start_stop_daemon_args="-b -m -p ${pidfile} -u ${BRAINER_USER:-brainer}:${BRAINER_GROUP:-brainer}"
+USER="${BRAINER_USER:-brainer}"
+start_stop_daemon_args="-b -m -p ${pidfile} -u ${USER}:${BRAINER_GROUP:-brainer} -d ~${USER}"
 
 depend() {
     need net
