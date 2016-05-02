@@ -1,6 +1,6 @@
 [submodule "xlog"]
 	path = xlog
-	url = git@letun.anondns.net:xlog.git
+	url = git://letun.anondns.net/xlog.git
 [submodule "serialization"]
 	path = serialization
-	url = git@letun.anondns.net:serialization.git
+	url = git://letun.anondns.net/serialization.git
