@@ -20,5 +20,4 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GLOOX_CFLAGS}")
 file(GLOB BOT_SRCS "src/*.cpp")
 add_executable(${BOT_NAME} ${BOT_SRCS})
 target_link_libraries(${BOT_NAME} ${BOT_LIBS})
-install(TARGETS ${BOT_NAME}
-    RUNTIME DESTINATION "bin")
+install(TARGETS ${BOT_NAME} RUNTIME DESTINATION "bin")
