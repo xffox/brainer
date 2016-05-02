@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.6)
 
 set(GUI_NAME brainer)
 
+message(STATUS "gui is enabled")
+
 find_package(Qt4)
 if(QT4_FOUND)
     include(${QT_USE_FILE})
@@ -41,5 +43,5 @@ if(QT4_FOUND)
     target_link_libraries(${GUI_NAME} ${QT_QTMAIN_LIBRARY} ${QT_LIBRARIES}
         ${CORE_LIBS} ${TASK_LIBS} ${BASE_LIBS})
 else()
-    message(WARNING "qt not found - ui not available")
+	message(FATAL "qt not found - gui not available")
 endif()

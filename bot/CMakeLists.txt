@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.6)
 
 set(BOT_NAME brainer_bot)
 
+message(STATUS "bot is enabled")
+
 # static build
 #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libgcc -static-libstdc++")
 
