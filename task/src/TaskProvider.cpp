@@ -208,8 +208,7 @@ namespace task
                     PropertyPredicate()
                         :properties{
                                 L"child astronomical body",
-                                L"parent astronomical body",
-                                L"part of"
+                                L"parent astronomical body"
                             }
                     {}
 

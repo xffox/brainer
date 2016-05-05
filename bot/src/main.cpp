@@ -9,8 +9,9 @@
 #include <codecvt>
 
 #include "xlog/xlog.h"
-
 #include "base/FileConfig.h"
+
+#include "SignalManager.h"
 
 XLOG_SET_LOGGER(xlog::ConsoleLogger)
 
@@ -80,11 +81,37 @@ int main()
         const auto config = readConfig("brainer_bot.conf");
         bot::Bot bot(config.tasksFile, config.jid, config.password,
             config.resource, config.room);
-        bot.run();
+        auto term = [&bot](){bot.kill();};
+        try
+        {
+            bot::SignalManager::getInstance().setHandler(
+                bot::SignalManager::SIGNAL_INT, term);
+            bot::SignalManager::getInstance().setHandler(
+                bot::SignalManager::SIGNAL_TERM, term);
+            bot.run();
+        }
+        catch(const std::exception&)
+        {
+            try
+            {
+                bot::SignalManager::getInstance().clearHandler(
+                    bot::SignalManager::SIGNAL_INT);
+            }
+            catch(const std::exception&)
+            {}
+            try
+            {
+                bot::SignalManager::getInstance().clearHandler(
+                    bot::SignalManager::SIGNAL_TERM);
+            }
+            catch(const std::exception&)
+            {}
+            throw;
+        }
     }
     catch(const std::exception &exc)
     {
-        std::cerr<<"error: "<<exc.what()<<std::endl;
+        xlog::log().error("main", "error: %s", exc.what());
         return 1;
     }
     return 0;
