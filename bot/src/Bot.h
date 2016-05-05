@@ -22,8 +22,9 @@ namespace bot
         ~Bot();
 
         void run();
-        
+        void kill();
     private:
+        volatile bool cont;
         std::unique_ptr<task::TaskProvider> taskProvider;
         std::unique_ptr<gloox::Client> client;
         std::unique_ptr<ConnectionHandler> connectionHandler;
