@@ -20,11 +20,12 @@ namespace task
             const std::string &name);
 
     private:
-        using TaskMap = std::unordered_map<std::string,
-              std::function<std::unique_ptr<core::ITaskGenerator>()>>;
+        using TaskTypeCreatorMap = std::unordered_map<std::string,
+              std::function<std::unique_ptr<core::ITaskGenerator>(const std::string&)>>;
 
     private:
-        TaskMap tasks;
+        std::string configFilename;
+        TaskTypeCreatorMap creators;
     };
 }
 
