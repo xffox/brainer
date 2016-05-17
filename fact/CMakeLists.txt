@@ -18,3 +18,5 @@ include_directories(${FACT_INCLUDES})
 file(GLOB FACT_SRCS "src/*.cpp")
 
 add_library(${FACT_NAME} ${FACT_SRCS})
+
+add_subdirectory(test)
