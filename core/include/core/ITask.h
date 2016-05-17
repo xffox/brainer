@@ -13,7 +13,7 @@ namespace core
     {
     public:
         virtual ~ITask(){}
-        
+
         virtual bool validate(const String &result) const = 0;
         virtual String answer() const = 0;
         virtual void describe(IRender &render) const = 0;

@@ -17,6 +17,7 @@
 #include "task/MultiLetterTaskGenerator.h"
 #include "task/FactTaskGenerator.h"
 #include "task/StringCollection.h"
+#include "task/FactDescriptionTaskGenerator.h"
 #include "task/tagaini.h"
 #include "task/StringSet.h"
 #include "fact/FileFact.h"
@@ -114,133 +115,95 @@ namespace task
                 });
             return tasks;
         }
+
+        class PropertyPredicate: public FactTaskGenerator::Predicate
+        {
+        public:
+            PropertyPredicate()
+                :properties{
+                    L"child astronomical body",
+                    L"parent astronomical body"
+                }
+            {}
+
+            virtual bool accept(const core::String &property) const override
+            {
+                return properties.find(property) != properties.end();
+            }
+
+        private:
+            task::StringSet properties;
+        };
     }
 
     TaskProvider::TaskProvider(const std::string &configFilename)
-        :tasks()
-    {
-        const auto tasksConfig = readTasksConfig(configFilename);
-        for(const auto &taskConfig : tasksConfig)
-        {
-            if(taskConfig.type == "hex")
-            {
-                tasks.insert(std::make_pair(
-                        taskConfig.name, []() {
-                        return std::unique_ptr<core::ITaskGenerator>(
-                            new HexByteTaskGenerator(rand()));
-                        }));
-            }
-            if(taskConfig.type == "arithmetic")
-            {
-                tasks.insert(std::make_pair(
-                        taskConfig.name, []() {
-                        return std::unique_ptr<core::ITaskGenerator>(
-                            new ArithmeticTaskGenerator(rand()));
-                        }));
-            }
-            else if(taskConfig.type == "config")
-            {
-                const auto filename = taskConfig.filename;
-                tasks.insert(std::make_pair(
-                        taskConfig.name, [filename]() {
-                        base::FileConfig fc(filename);
-                        return std::unique_ptr<core::ITaskGenerator>(
-                            new DictTaskGenerator(rand(),
-                                readTasksFromConfig(fc.read())));
-                        }));
-            }
-            else if(taskConfig.type == "tagaini")
-            {
-                const auto filename = taskConfig.filename;
-                tasks.insert(std::make_pair(
-                        taskConfig.name, [filename]() {
-                        return std::unique_ptr<core::ITaskGenerator>(
-                            new DictTaskGenerator(rand(),
-                                readTagaini(filename)));
-                        }));
-            }
-            else if(taskConfig.type == "tagaini_rev")
-            {
-                const auto filename = taskConfig.filename;
-                tasks.insert(std::make_pair(
-                        taskConfig.name, [filename]() {
-                        return std::unique_ptr<core::ITaskGenerator>(
-                            new DictTaskGenerator(rand(),
-                                readTagaini(filename), true));
-                        }));
-            }
-            else if(taskConfig.type == "tagaini_prons")
-            {
-                const auto filename = taskConfig.filename;
-                tasks.insert(std::make_pair(
-                        taskConfig.name, [filename]() {
-                        return std::unique_ptr<core::ITaskGenerator>(
-                            new DictTaskGenerator(rand(),
-                                readTagainiWithProns(filename)));
-                        }));
-            }
-            else if(taskConfig.type == "tagaini_prons_rev")
-            {
-                const auto filename = taskConfig.filename;
-                tasks.insert(std::make_pair(
-                        taskConfig.name, [filename]() {
-                        return std::unique_ptr<core::ITaskGenerator>(
-                            new DictTaskGenerator(rand(),
-                                readTagainiWithProns(filename), true));
-                        }));
-            }
-            else if(taskConfig.type == "multiletter")
-            {
-                const auto filename = taskConfig.filename;
-                tasks.insert(std::make_pair(
-                        taskConfig.name, [filename]() {
-                        base::FileConfig fc(filename);
-                        return std::unique_ptr<core::ITaskGenerator>(
-                            new MultiLetterTaskGenerator(rand(),
-                                readMultiLetterTasksFromConfig(fc.read())));
-                        }));
-            }
-            else if(taskConfig.type == "fact")
-            {
-                class PropertyPredicate: public FactTaskGenerator::Predicate
-                {
-                public:
-                    PropertyPredicate()
-                        :properties{
-                                L"child astronomical body",
-                                L"parent astronomical body"
-                            }
-                    {}
-
-                    virtual bool accept(const core::String &property) const override
-                    {
-                        return properties.find(property) != properties.end();
-                    }
-
-                private:
-                    task::StringSet properties;
-                };
-                const auto filename = taskConfig.filename;
-                tasks.insert(std::make_pair(
-                        taskConfig.name, [filename]() {
-                        return std::unique_ptr<core::ITaskGenerator>(
-                            new FactTaskGenerator(rand(),
-                                std::unique_ptr<fact::IFact>(
-                                    new fact::FileFact(filename)),
-                                std::unique_ptr<FactTaskGenerator::Predicate>(
-                                    new PropertyPredicate())));
-                        }));
-            }
+        :configFilename(configFilename), creators{
+            std::make_pair("hex", [](const std::string&) {
+                return std::unique_ptr<core::ITaskGenerator>(
+                    new HexByteTaskGenerator(rand()));
+                }),
+            std::make_pair("arithmetic", [](const std::string&) {
+                return std::unique_ptr<core::ITaskGenerator>(
+                    new ArithmeticTaskGenerator(rand()));
+                }),
+            std::make_pair("config", [](const std::string &filename) {
+                base::FileConfig fc(filename);
+                return std::unique_ptr<core::ITaskGenerator>(
+                    new DictTaskGenerator(rand(),
+                        readTasksFromConfig(fc.read())));
+                }),
+            std::make_pair("tagaini", [](const std::string &filename) {
+                return std::unique_ptr<core::ITaskGenerator>(
+                    new DictTaskGenerator(rand(),
+                        readTagaini(filename)));
+                }),
+            std::make_pair("tagaini_rev", [](const std::string &filename) {
+                return std::unique_ptr<core::ITaskGenerator>(
+                    new DictTaskGenerator(rand(),
+                        readTagaini(filename), true));
+                }),
+            std::make_pair("tagaini_prons", [](const std::string &filename) {
+                return std::unique_ptr<core::ITaskGenerator>(
+                    new DictTaskGenerator(rand(),
+                        readTagainiWithProns(filename)));
+                }),
+            std::make_pair("tagaini_prons_rev", [](const std::string &filename) {
+                return std::unique_ptr<core::ITaskGenerator>(
+                    new DictTaskGenerator(rand(),
+                        readTagainiWithProns(filename), true));
+                }),
+            std::make_pair("multiletter", [](const std::string &filename) {
+                base::FileConfig fc(filename);
+                return std::unique_ptr<core::ITaskGenerator>(
+                    new MultiLetterTaskGenerator(rand(),
+                        readMultiLetterTasksFromConfig(fc.read())));
+                }),
+            std::make_pair("fact", [](const std::string &filename) {
+                return std::unique_ptr<core::ITaskGenerator>(
+                    new FactTaskGenerator(rand(),
+                        std::unique_ptr<fact::IFact>(
+                            new fact::FileFact(filename)),
+                        std::unique_ptr<FactTaskGenerator::Predicate>(
+                            new PropertyPredicate())));
+                }),
+            std::make_pair("description", [](const std::string &filename) {
+                return std::unique_ptr<core::ITaskGenerator>(
+                    new FactDescriptionTaskGenerator(
+                        std::unique_ptr<fact::IFact>(
+                            new fact::FileFact(filename)),
+                        rand()));
+                })
         }
-    }
+    {}
 
     TaskProvider::StringSet TaskProvider::getTasks() const
     {
+        const auto tasksConfig = readTasksConfig(configFilename);
         StringSet result;
-        std::transform(tasks.begin(), tasks.end(),
+        std::transform(tasksConfig.begin(), tasksConfig.end(),
             std::inserter(result, result.begin()),
-            [](const TaskMap::value_type &p) {
-                return p.first;
+            [](const TaskConfigCollection::value_type &p) {
+                return p.name;
             });
         return result;
     }
@@ -248,10 +211,17 @@ namespace task
     std::unique_ptr<core::ITaskGenerator> TaskProvider::create(
         const std::string &name)
     {
-        auto iter = tasks.find(name);
-        if(iter != tasks.end())
-            return iter->second();
-        else
-            throw std::invalid_argument("invalid task name");
+        const auto tasksConfig = readTasksConfig(configFilename);
+        for(const auto &task : tasksConfig)
+        {
+            if(task.name == name)
+            {
+                auto iter = creators.find(task.type);
+                if(iter == creators.end())
+                    throw std::runtime_error("invalid task type configured");
+                return iter->second(task.filename);
+            }
+        }
+        throw std::invalid_argument("invalid task name");
     }
 }

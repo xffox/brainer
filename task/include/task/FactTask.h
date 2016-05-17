@@ -16,7 +16,7 @@ namespace task
         bool validate(const core::String &result) const override;
         core::String answer() const override;
         void describe(core::IRender &render) const override;
-        
+
     private:
         core::String item;
         core::String property;

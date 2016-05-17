@@ -13,19 +13,12 @@
 #include "task/FactTask.h"
 
 #include "util.h"
+#include "condition.h"
 
 namespace task
 {
     namespace
     {
-        template<typename T>
-        std::unique_ptr<T> &notNull(std::unique_ptr<T> &ptr)
-        {
-            if(ptr.get() == nullptr)
-                throw std::invalid_argument("null argument");
-            return ptr;
-        }
-
         core::String toString(fact::IFact &fact, const fact::Variant &value)
         {
             if(value.isType<int>())
@@ -63,7 +56,7 @@ namespace task
     FactTaskGenerator::FactTaskGenerator(unsigned int seed,
         std::unique_ptr<fact::IFact> fact,
         std::unique_ptr<Predicate> propertyFilter)
-        :fact(std::move(notNull(fact))),
+        :fact(std::move(condition::notNull(fact))),
         propertyFilter(std::move(propertyFilter)), itemIds()
     {
         for(auto itemId : this->fact->items())
