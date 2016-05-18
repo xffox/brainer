@@ -10,9 +10,7 @@ namespace task
     {
     public:
         FactDescriptionTask(const core::String &value,
-            const core::String &description)
-            :value(value), description(description)
-        {}
+            const core::String &description);
 
         virtual bool validate(const core::String &result) const override;
         virtual core::String answer() const override;
