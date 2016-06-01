@@ -9,44 +9,15 @@
 
 namespace task
 {
-    namespace
-    {
-        core::String replace(const core::String &str,
-            const core::String &pattern, const core::String &replacement)
-        {
-            core::String result;
-            auto cur = str.begin();
-            while(cur != str.end())
-            {
-                auto patternIter = std::search(cur, str.end(),
-                    pattern.begin(), pattern.end(),
-                    [](core::String::value_type left, core::String::value_type right) {
-                        return std::tolower(left) == std::tolower(right);
-                    });
-                result.insert(result.end(), cur, patternIter);
-                if(patternIter != str.end())
-                {
-                    result.insert(result.end(), replacement.begin(), replacement.end());
-                    cur = patternIter + pattern.size();
-                }
-                else
-                {
-                    cur = patternIter;
-                }
-            }
-            return result;
-        }
-    }
-
     FactDescriptionTask::FactDescriptionTask(const core::String &value,
         const core::String &description)
-        :value(util::tolower(value)), description(replace(description, value, L"?"))
+        :value(value), description(description)
     {
     }
 
     bool FactDescriptionTask::validate(const core::String &result) const
     {
-        return util::tolower(result) == value;
+        return util::tolower(result) == util::tolower(value);
     }
 
     core::String FactDescriptionTask::answer() const
