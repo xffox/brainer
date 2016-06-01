@@ -5,12 +5,12 @@
 #include <string>
 #include <vector>
 #include <utility>
-#include <queue>
 #include <cstddef>
 
 #include "core/ITaskGenerator.h"
 #include "core/String.h"
 #include "task/StringCollection.h"
+#include "IndexGenerator.h"
 
 namespace core
 {
@@ -32,15 +32,9 @@ namespace task
         virtual std::unique_ptr<core::ITask> generateTask();
 
     private:
-        using IdxCol = std::vector<std::size_t>;
-        using IdxQueue = std::queue<std::size_t>;
-
-    private:
         TaskCollection tasks;
         bool reversed;
-        IdxCol indices;
-        std::size_t excludedSize;
-        IdxQueue excludedIndices;
+        IndexGenerator indexGenerator;
     };
 }
 

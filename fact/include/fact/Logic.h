@@ -3,24 +3,22 @@
 
 #include <vector>
 
-#include "fact/LogicFunc.h"
+#include "fact/Expression.h"
 
 namespace fact
 {
     class Logic
     {
     public:
-        using FuncCol = std::vector<LogicFunc>;
+        using ExpressionCol = std::vector<Expression>;
 
     public:
-        Logic(const FuncCol &functions)
-            :functions(functions)
-        {}
+        Logic(const ExpressionCol &functions);
 
-        LogicFunc generate() const;
+        Expression generate() const;
 
     private:
-        FuncCol functions;
+        ExpressionCol functions;
     };
 }
 
