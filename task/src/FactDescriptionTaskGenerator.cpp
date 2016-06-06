@@ -50,48 +50,15 @@ namespace task
         }
     }
 
-    FactDescriptionTaskGenerator::FactDescriptionTaskGenerator(std::unique_ptr<fact::IFact> fact,
-        int seed)
-        :fact(std::move(condition::notNull(fact))), itemIndices()
-    {
-        srand(seed);
-        for(const auto itemId : this->fact->items())
-        {
-            const auto properties = this->fact->properties(itemId);
-            if(properties.isNull())
-            {
-                // TODO: proper exception
-                throw std::runtime_error("inconsistent facts data");
-            }
-            const auto itemName = this->fact->itemName(itemId);
-            if(itemName.isNull())
-            {
-                throw std::runtime_error("inconsistent facts data");
-            }
-            for(const auto &prop : *properties)
-            {
-                const auto propName = this->fact->propertyName(
-                    prop.propertyId);
-                if(!propName.isNull() && *propName == DESCRIPTION_PROPERTY)
-                {
-                    const auto &value = prop.value.getValue<core::String>();
-                    if(searchIgnoringCase(value.begin(), value.end(),
-                            itemName->begin(), itemName->end()) != value.end())
-                    {
-                        itemIndices.push_back(itemId);
-                        break;
-                    }
-                }
-            }
-        }
-        if(itemIndices.empty())
-            throw std::runtime_error("no items with description");
-    }
+    FactDescriptionTaskGenerator::FactDescriptionTaskGenerator(
+        std::unique_ptr<fact::IFact> fact, int seed)
+        :fact(std::move(condition::notNull(fact))),
+        indexGenerator(prepareIndices(*this->fact), seed)
+    {}
 
     std::unique_ptr<core::ITask> FactDescriptionTaskGenerator::generateTask()
     {
-        assert(!itemIndices.empty());
-        const auto itemId = itemIndices[rand()%itemIndices.size()];
+        const auto itemId = indexGenerator.generator.gen();
         const auto itemName = fact->itemName(itemId);
         if(itemName.isNull())
         {
@@ -108,7 +75,6 @@ namespace task
             const auto propName = this->fact->propertyName(prop.propertyId);
             if(!propName.isNull() && *propName == DESCRIPTION_PROPERTY)
             {
-                itemIndices.push_back(itemId);
                 return std::unique_ptr<core::ITask>(
                     new FactDescriptionTask(*itemName,
                         replaceIgnoringCase(
@@ -117,6 +83,43 @@ namespace task
             }
         }
         throw std::runtime_error("inconsistent facts data");
+    }
+
+    IndexGenerator::IndexSet FactDescriptionTaskGenerator::prepareIndices(fact::IFact &fact)
+    {
+        IndexGenerator::IndexSet itemIndices;
+        for(const auto itemId : fact.items())
+        {
+            const auto properties = fact.properties(itemId);
+            if(properties.isNull())
+            {
+                // TODO: proper exception
+                throw std::runtime_error("inconsistent facts data");
+            }
+            const auto itemName = fact.itemName(itemId);
+            if(itemName.isNull())
+            {
+                throw std::runtime_error("inconsistent facts data");
+            }
+            for(const auto &prop : *properties)
+            {
+                const auto propName = fact.propertyName(
+                    prop.propertyId);
+                if(!propName.isNull() && *propName == DESCRIPTION_PROPERTY)
+                {
+                    const auto &value = prop.value.getValue<core::String>();
+                    if(searchIgnoringCase(value.begin(), value.end(),
+                            itemName->begin(), itemName->end()) != value.end())
+                    {
+                        itemIndices.insert(itemId);
+                        break;
+                    }
+                }
+            }
+        }
+        if(itemIndices.empty())
+            throw std::runtime_error("no items with description");
+        return itemIndices;
     }
 
     const fact::String FactDescriptionTaskGenerator::DESCRIPTION_PROPERTY = L"description";
