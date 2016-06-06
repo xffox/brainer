@@ -7,6 +7,7 @@
 #include "core/ITaskGenerator.h"
 #include "fact/IFact.h"
 #include "fact/ItemId.h"
+#include "task/IndexGenerator.h"
 
 namespace task
 {
@@ -17,13 +18,28 @@ namespace task
         virtual std::unique_ptr<core::ITask> generateTask() override;
 
     private:
-        using ItemIdxCol = std::vector<fact::ItemId>;
+        struct InitializedIndexGenerator
+        {
+            InitializedIndexGenerator(IndexGenerator::IndexSet &&indices,
+                int seed)
+                :generator(indices, indices.size()/2, seed)
+            {}
+
+            IndexGenerator generator;
+        };
+
+    private:
+        FactDescriptionTaskGenerator(IndexGenerator::IndexSet &&indices,
+            std::unique_ptr<fact::IFact> fact, int seed);
+
+        static IndexGenerator::IndexSet prepareIndices(fact::IFact &fact);
+
+    private:
+        static const fact::String DESCRIPTION_PROPERTY;
 
     private:
         std::unique_ptr<fact::IFact> fact;
-        ItemIdxCol itemIndices;
-
-        static const fact::String DESCRIPTION_PROPERTY;
+        InitializedIndexGenerator indexGenerator;
     };
 }
 
