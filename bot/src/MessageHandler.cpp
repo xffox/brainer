@@ -76,6 +76,7 @@ namespace bot
                             const auto answer = strutil::toCoreString(msg.body());
                             if(taskLogic->validate(answer))
                             {
+                                sendValid(answer);
                                 sendTask(*taskLogic);
                             }
                             else
@@ -121,6 +122,11 @@ namespace bot
     void MessageHandler::sendInvalid(const core::String &str)
     {
         session.send(strutil::fromCoreString(str + L" is WRONG"));
+    }
+
+    void MessageHandler::sendValid(const core::String &str)
+    {
+        session.send(strutil::fromCoreString(str + L" is RIGHT"));
     }
 
     void MessageHandler::sendAnswer(const core::String &str)

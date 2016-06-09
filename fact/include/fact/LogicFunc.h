@@ -19,6 +19,13 @@ namespace fact
         LogicType result;
         ArgumentCol args;
     };
+
+    inline bool operator==(const LogicFunc &left, const LogicFunc &right)
+    {
+        return left.name == right.name &&
+            left.result == right.result &&
+            left.args == right.args;
+    }
 }
 
 #endif

@@ -12,16 +12,11 @@
 
 namespace fact
 {
-    Logic::Logic(const ExpressionCol &functions)
-        :functions(functions)
+    // TODO: optimal search in case of missing ordering of a type
+    Expression Logic::generate(const ExpressionCol &functions) const
     {
         if(functions.empty())
             throw std::invalid_argument("empty functions list");
-    }
-
-    // TODO: optimal search in case of missing ordering of a type
-    Expression Logic::generate() const
-    {
         using LogicTypeCol = std::vector<LogicType>;
         assert(!functions.empty());
         auto pool(functions);
@@ -66,5 +61,78 @@ namespace fact
             }
         }
         return targetFunc;
+    }
+
+    Logic::ExpressionCol Logic::generate(const ExpressionCol &functions,
+        const LogicType::ParameterCol &availableParams) const
+    {
+        std::random_device rd;
+        std::default_random_engine gen(rd());
+        ExpressionCol result;
+        ExpressionCol pool;
+        ExpressionCol allFuncs(functions);
+        if(functions.empty())
+            return result;
+        for(const auto &f : functions)
+        {
+            bool available = true;
+            for(const auto &p : f.arguments())
+            {
+                auto iter = std::find(availableParams.begin(), availableParams.end(), p);
+                if(iter == availableParams.end())
+                {
+                    available = false;
+                    break;
+                }
+            }
+            if(available)
+                pool.push_back(f);
+        }
+        if(pool.empty())
+            return result;
+        const std::size_t ITERS = 40;
+        for(std::size_t it = 0; it < ITERS;)
+        {
+            std::uniform_int_distribution<std::size_t> dist(0, allFuncs.size()-1);
+            auto f = allFuncs[dist(gen)];
+            bool valid = true;
+            const auto targetParams = f.arguments();
+            if(!targetParams.empty())
+            {
+                for(std::size_t i = targetParams.size(); i > 0; --i)
+                {
+                    const auto &targetParam = targetParams[i-1];
+                    auto iter = std::find(availableParams.begin(), availableParams.end(), targetParam);
+                    if(iter != availableParams.end())
+                        continue;
+                    ExpressionCol candidateExpressions;
+                    for(const auto &candExpr : pool)
+                    {
+                        if(candExpr.result() == targetParam)
+                            candidateExpressions.push_back(candExpr);
+                    }
+                    if(candidateExpressions.empty())
+                    {
+                        valid = false;
+                        break;
+                    }
+                    const auto &selectedCandidate = candidateExpressions[
+                        std::uniform_int_distribution<std::size_t>(0, candidateExpressions.size()-1)(gen)];
+                    f = f.dot(i-1, selectedCandidate);
+                }
+            }
+            if(valid)
+            {
+                auto iter = std::find(result.begin(), result.end(), f);
+                if(iter == result.end())
+                {
+                    result.push_back(f);
+                    pool.push_back(f);
+                    allFuncs.push_back(f);
+                }
+            }
+            ++it;
+        }
+        return result;
     }
 }

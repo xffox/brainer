@@ -15,6 +15,7 @@ namespace fact
 {
     class Expression
     {
+        friend bool operator==(const Expression &left, const Expression &right);
     public:
         class IVisitor
         {
@@ -30,7 +31,7 @@ namespace fact
         };
 
     public:
-        Expression(const LogicFunc &func);
+        explicit Expression(const LogicFunc &func);
         Expression(const Expression &that);
         Expression &operator=(const Expression &that);
 
@@ -60,6 +61,8 @@ namespace fact
         Node root;
         LogicFunc::ArgumentCol args;
     };
+
+    bool operator==(const Expression &left, const Expression &right);
 }
 
 #endif

@@ -27,6 +27,7 @@ namespace bot
 
         void sendTask(core::TaskLogic &logic);
         void sendInvalid(const core::String &str);
+        void sendValid(const core::String &str);
         void sendAnswer(const core::String &str);
 
         void listTasks();

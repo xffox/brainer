@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "fact/Expression.h"
+#include "fact/LogicType.h"
 
 namespace fact
 {
@@ -13,9 +14,9 @@ namespace fact
         using ExpressionCol = std::vector<Expression>;
 
     public:
-        Logic(const ExpressionCol &functions);
-
-        Expression generate() const;
+        Expression generate(const ExpressionCol &functions) const;
+        ExpressionCol generate(const ExpressionCol &functions,
+            const LogicType::ParameterCol &availableParams) const;
 
     private:
         ExpressionCol functions;
