@@ -76,12 +76,12 @@ namespace bot
                             const auto answer = strutil::toCoreString(msg.body());
                             if(taskLogic->validate(answer))
                             {
-                                sendValid(answer);
+                                sendValid(*taskLogic, answer);
                                 sendTask(*taskLogic);
                             }
                             else
                             {
-                                sendInvalid(answer);
+                                sendInvalid(*taskLogic, answer);
                             }
                         }
                         break;
@@ -119,19 +119,26 @@ namespace bot
         session.send(strutil::fromCoreString(render.text()));
     }
 
-    void MessageHandler::sendInvalid(const core::String &str)
+    void MessageHandler::sendInvalid(core::TaskLogic &logic, const core::String &str)
     {
-        session.send(strutil::fromCoreString(str + L" is WRONG"));
+        session.send(strutil::fromCoreString(L"WRONG: " + description(logic) + L" isn't " +  str));
     }
 
-    void MessageHandler::sendValid(const core::String &str)
+    void MessageHandler::sendValid(core::TaskLogic &logic, const core::String &str)
     {
-        session.send(strutil::fromCoreString(str + L" is RIGHT"));
+        session.send(strutil::fromCoreString(L"RIGHT: " + description(logic) + L" is " +  str));
     }
 
     void MessageHandler::sendAnswer(const core::String &str)
     {
         session.send(strutil::fromCoreString(L"answer is " + str));
+    }
+
+    core::String MessageHandler::description(core::TaskLogic &logic)
+    {
+        StringRender render;
+        logic.describe(render);
+        return render.text();
     }
 
     bool MessageHandler::playTasks(const std::string &name)
