@@ -6,6 +6,7 @@
 #include <queue>
 #include <stack>
 #include <utility>
+#include <cstddef>
 
 namespace fact
 {
@@ -149,5 +150,47 @@ namespace fact
             assert(cur.node);
             visitor.visit(cur.node->func, cur.idx, cur.argumentIndices);
         }
+    }
+
+    bool operator==(const Expression &left, const Expression &right)
+    {
+        struct CmpNode
+        {
+            const Expression::Node *left;
+            const Expression::Node *right;
+        };
+        using CmpQueue = std::queue<CmpNode>;
+        CmpQueue front;
+        front.push(CmpNode{&left.root, &right.root});
+        while(!front.empty())
+        {
+            const auto cur = front.front();
+            front.pop();
+            if(cur.left == nullptr && cur.right == nullptr)
+                continue;
+            if(cur.left == nullptr || cur.right == nullptr)
+                return false;
+            if(cur.left->func == cur.right->func &&
+                cur.left->arguments.size() == cur.right->arguments.size())
+            {
+                for(std::size_t i = 0; i < cur.left->arguments.size(); ++i)
+                {
+                    if(cur.left->arguments[i].first == cur.right->arguments[i].first)
+                    {
+                        front.push(CmpNode{cur.left->arguments[i].second.get(),
+                            cur.right->arguments[i].second.get()});
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }
