@@ -2,6 +2,9 @@
 
 #include <cassert>
 #include <sstream>
+#include <stdexcept>
+#include <iomanip>
+#include <cstddef>
 
 #include <gloox/messagesession.h>
 #include <gloox/message.h>
@@ -74,14 +77,15 @@ namespace bot
                     case parser::Input::TYPE_MSG:
                         {
                             const auto answer = strutil::toCoreString(msg.body());
+                            const auto descr = description(*taskLogic);
                             if(taskLogic->validate(answer))
                             {
-                                sendValid(*taskLogic, answer);
+                                sendValid(descr, answer, taskLogic->getStats());
                                 sendTask(*taskLogic);
                             }
                             else
                             {
-                                sendInvalid(*taskLogic, answer);
+                                sendInvalid(descr, answer, taskLogic->getStats());
                             }
                         }
                         break;
@@ -119,19 +123,52 @@ namespace bot
         session.send(strutil::fromCoreString(render.text()));
     }
 
-    void MessageHandler::sendInvalid(core::TaskLogic &logic, const core::String &str)
+    void MessageHandler::sendInvalid(const core::String &descr, const core::String &str,
+        const core::TaskLogic::StatsCol &stats)
     {
-        session.send(strutil::fromCoreString(L"WRONG: " + description(logic) + L" isn't " +  str));
+        session.send(strutil::fromCoreString(L"WRONG: " + descr + L" isn't " +  str));
     }
 
-    void MessageHandler::sendValid(core::TaskLogic &logic, const core::String &str)
+    void MessageHandler::sendValid(const core::String &descr, const core::String &str,
+        const core::TaskLogic::StatsCol &stats)
     {
-        session.send(strutil::fromCoreString(L"RIGHT: " + description(logic) + L" is " +  str));
+        std::wstringstream stream;
+        if(stats.empty())
+            throw std::runtime_error("stats list is empty on valid result");
+        const auto elapsedUs = stats.back().timeUs;
+        stream<<L"RIGHT: "<<descr<<L" is "<<str
+            <<" ("<<std::setprecision(2)<<std::fixed
+            <<static_cast<double>(elapsedUs)/1000000.0<<"s)";
+        session.send(strutil::fromCoreString(stream.str()));
     }
 
     void MessageHandler::sendAnswer(const core::String &str)
     {
         session.send(strutil::fromCoreString(L"answer is " + str));
+    }
+
+    void MessageHandler::sendStats(const core::TaskLogic::StatsCol &stats)
+    {
+        if(stats.empty())
+            return;
+        std::wstringstream stream;
+        double averageTime = 0.0;
+        std::size_t answeredCount = 0;
+        std::size_t wrongCount = 0;
+        for(const auto &s : stats)
+        {
+            averageTime += s.timeUs;
+            if(s.answered)
+                answeredCount += 1;
+            wrongCount += s.tries;
+        }
+        averageTime /= stats.size();
+        stream<<"played: "<<stats.size()<<" tasks"<<std::endl
+            <<"answered: "<<answeredCount<<" tasks"<<std::endl
+            <<"wrong: "<<wrongCount<<" answers"<<std::endl
+            <<"average time: "<<std::setprecision(2)<<std::fixed
+                <<averageTime/1000000.0<<"s";
+        session.send(strutil::fromCoreString(stream.str()));
     }
 
     core::String MessageHandler::description(core::TaskLogic &logic)
@@ -160,6 +197,8 @@ namespace bot
 
     void MessageHandler::quitTasks()
     {
+        assert(taskLogic.get());
+        sendStats(taskLogic->getStats());
         session.send("quit");
         taskLogic.reset();
     }

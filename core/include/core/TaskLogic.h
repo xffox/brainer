@@ -29,13 +29,13 @@ namespace core
         void describe(IRender &render);
         String skip();
 
-        long long elapsed() const;
+        long long elapsedUs() const;
 
         const StatsCol &getStats() const;
 
     private:
         void generate();
-        
+
     private:
         std::unique_ptr<Stopwatch> stopwatch;
 

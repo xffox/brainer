@@ -90,7 +90,7 @@ namespace gui
     void TaskDialog::timed()
     {
         if(logic.get())
-            showElapsed(logic->elapsed());
+            showElapsed(logic->elapsedUs());
     }
 
     void TaskDialog::showStats()
