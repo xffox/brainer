@@ -76,7 +76,7 @@ namespace core
         }
     }
 
-    long long TaskLogic::elapsed() const
+    long long TaskLogic::elapsedUs() const
     {
         assert(stopwatch.get());
         return stopwatch->elapsed();

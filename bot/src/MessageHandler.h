@@ -26,9 +26,12 @@ namespace bot
         void quitTasks();
 
         void sendTask(core::TaskLogic &logic);
-        void sendInvalid(core::TaskLogic &logic, const core::String &str);
-        void sendValid(core::TaskLogic &logic, const core::String &str);
+        void sendInvalid(const core::String &descr, const core::String &str,
+            const core::TaskLogic::StatsCol &stats);
+        void sendValid(const core::String &descr, const core::String &str,
+            const core::TaskLogic::StatsCol &stats);
         void sendAnswer(const core::String &str);
+        void sendStats(const core::TaskLogic::StatsCol &stats);
         core::String description(core::TaskLogic &logic);
 
         void listTasks();
