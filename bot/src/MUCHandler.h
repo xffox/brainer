@@ -7,8 +7,12 @@
 #include <gloox/mucroomhandler.h>
 #include <gloox/mucroomconfighandler.h>
 
-#include "task/TaskProvider.h"
-#include "core/TaskLogic.h"
+#include "ConferenceMessageProcessor.h"
+
+namespace task
+{
+    class TaskProvider;
+}
 
 namespace bot
 {
@@ -36,24 +40,24 @@ namespace bot
         virtual void handleMUCInfo(gloox::MUCRoom*, int, const std::string&, const gloox::DataForm*);
         virtual void handleMUCItems(gloox::MUCRoom*, const gloox::Disco::ItemList&);
 
-        void sendTask(core::TaskLogic &logic);
-        void sendValid(const std::string &nick, const core::String &str);
-        void sendInvalid(const std::string &nick, const core::String &str);
-        void sendAnswer(const core::String &str);
-
     private:
-        bool playTasks(const std::string &name);
-        void quitTasks();
+        class Sender: public MessageProcessor::Sender
+        {
+        public:
+            Sender(gloox::MUCRoom &room)
+                :room(room)
+            {}
 
-        void listTasks();
-        void sendNormHelp();
-        void sendPlayHelp();
-        
+            virtual void send(const std::string &msg) override;
+
+        private:
+            gloox::MUCRoom &room;
+        };
+
     private:
         gloox::MUCRoom &room;
-        task::TaskProvider &taskProvider;
-
-        std::unique_ptr<core::TaskLogic> taskLogic;
+        Sender sender;
+        std::unique_ptr<ConferenceMessageProcessor> messageProcessor;
     };
 }
 
