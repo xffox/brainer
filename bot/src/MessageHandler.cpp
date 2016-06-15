@@ -26,7 +26,7 @@ namespace bot
             messageProcessor->receive(msg.from().username(), msg.body());
             const auto &msgs = sender.getMessages();
             std::stringstream stream;
-            for(StringCol::size_type i = 0; i < msgs.size(); ++i)
+            for(CollectingSender::StringCol::size_type i = 0; i < msgs.size(); ++i)
             {
                 stream<<msgs[i];
                 if(i+1 < msgs.size())
@@ -35,10 +35,5 @@ namespace bot
             session.send(stream.str());
             sender.reset();
         }
-    }
-
-    void MessageHandler::Sender::send(const std::string &msg)
-    {
-        messages.push_back(msg);
     }
 }
