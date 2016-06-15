@@ -2,6 +2,7 @@
 #define BOT_MESSAGEHANDLER_H
 
 #include <memory>
+#include <vector>
 
 #include <gloox/messagehandler.h>
 
@@ -25,17 +26,24 @@ namespace bot
             gloox::MessageSession *session);
 
     private:
+        using StringCol = std::vector<std::string>;
         class Sender: public MessageProcessor::Sender
         {
         public:
-            Sender(gloox::MessageSession &session)
-                :session(session)
-            {}
-
             virtual void send(const std::string &msg) override;
 
+            const StringCol &getMessages() const
+            {
+                return messages;
+            }
+
+            void reset()
+            {
+                messages.clear();
+            }
+
         private:
-            gloox::MessageSession &session;
+            StringCol messages;
         };
 
     private:
