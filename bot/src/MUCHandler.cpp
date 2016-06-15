@@ -13,7 +13,7 @@ namespace bot
 {
     MUCHandler::MUCHandler(gloox::MUCRoom &room,
         task::TaskProvider &taskProvider)
-        :room(room), sender(room), messageProcessor(new ConferenceMessageProcessor(sender, taskProvider))
+        :room(room), sender(), messageProcessor(new ConferenceMessageProcessor(sender, taskProvider))
     {}
 
     void MUCHandler::handleMUCConfigList(gloox::MUCRoom*, const gloox::MUCListItemList&, gloox::MUCOperation)
@@ -72,11 +72,16 @@ namespace bot
         if(msg.subtype() == gloox::Message::Groupchat)
         {
             messageProcessor->receive(msg.from().resource(), msg.body());
+            const auto &msgs = sender.getMessages();
+            std::stringstream stream;
+            for(CollectingSender::StringCol::size_type i = 0; i < msgs.size(); ++i)
+            {
+                stream<<msgs[i];
+                if(i+1 < msgs.size())
+                    stream<<std::endl;
+            }
+            room.send(stream.str());
+            sender.reset();
         }
-    }
-
-    void MUCHandler::Sender::send(const std::string &msg)
-    {
-        room.send(msg);
     }
 }

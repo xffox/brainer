@@ -248,6 +248,7 @@ namespace bot
             wrongCount += s.tries;
         }
         averageTime /= stats.size();
+        stream<<"stats:"<<std::endl;
         stream<<"played: "<<stats.size()<<" tasks"<<std::endl
             <<"answered: "<<answeredCount<<" tasks"<<std::endl
             <<"wrong: "<<wrongCount<<" answers"<<std::endl

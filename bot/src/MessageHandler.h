@@ -7,6 +7,7 @@
 #include <gloox/messagehandler.h>
 
 #include "MessageProcessor.h"
+#include "CollectingSender.h"
 
 namespace task
 {
@@ -26,29 +27,8 @@ namespace bot
             gloox::MessageSession *session);
 
     private:
-        using StringCol = std::vector<std::string>;
-        class Sender: public MessageProcessor::Sender
-        {
-        public:
-            virtual void send(const std::string &msg) override;
-
-            const StringCol &getMessages() const
-            {
-                return messages;
-            }
-
-            void reset()
-            {
-                messages.clear();
-            }
-
-        private:
-            StringCol messages;
-        };
-
-    private:
         gloox::MessageSession &session;
-        Sender sender;
+        CollectingSender sender;
         std::unique_ptr<MessageProcessor> messageProcessor;
     };
 }

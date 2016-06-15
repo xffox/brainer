@@ -1,7 +1,10 @@
 #include "ConferenceMessageProcessor.h"
 
+#include <algorithm>
 #include <sstream>
 #include <iomanip>
+#include <iterator>
+#include <set>
 
 #include "strutil.h"
 
@@ -46,17 +49,35 @@ namespace bot
 
     void ConferenceMessageProcessor::sendStats(const core::TaskLogic::StatsCol &stats)
     {
+        struct Score
+        {
+            std::string name;
+            std::size_t score;
+        };
+        struct ScoreLess
+        {
+            bool operator()(const Score &left, const Score &right) const
+            {
+                return left.score > right.score ||
+                    (left.score == right.score && left.name < right.name);
+            }
+        };
+        using SortedScoreSet = std::set<Score, ScoreLess>;
         if(!scores.empty())
         {
+            SortedScoreSet sortedScores;
+            std::transform(scores.begin(), scores.end(),
+                std::inserter(sortedScores, sortedScores.begin()),
+                [](const ScoreCountMap::value_type &p){return Score{p.first, p.second};});
             std::stringstream stream;
             stream<<"scores:"<<std::endl;
-            for(auto iter = scores.begin(); iter != scores.end(); ++iter)
+            for(auto iter = sortedScores.begin(); iter != sortedScores.end(); ++iter)
             {
                 const auto &p = *iter;
-                stream<<p.first<<": "<<p.second;
+                stream<<p.name<<": "<<p.score;
                 auto nextIter = iter;
                 ++nextIter;
-                if(nextIter != scores.end())
+                if(nextIter != sortedScores.end())
                     stream<<std::endl;
             }
             send(stream.str());

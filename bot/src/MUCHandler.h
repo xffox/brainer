@@ -8,6 +8,7 @@
 #include <gloox/mucroomconfighandler.h>
 
 #include "ConferenceMessageProcessor.h"
+#include "CollectingSender.h"
 
 namespace task
 {
@@ -41,22 +42,8 @@ namespace bot
         virtual void handleMUCItems(gloox::MUCRoom*, const gloox::Disco::ItemList&);
 
     private:
-        class Sender: public MessageProcessor::Sender
-        {
-        public:
-            Sender(gloox::MUCRoom &room)
-                :room(room)
-            {}
-
-            virtual void send(const std::string &msg) override;
-
-        private:
-            gloox::MUCRoom &room;
-        };
-
-    private:
         gloox::MUCRoom &room;
-        Sender sender;
+        CollectingSender sender;
         std::unique_ptr<ConferenceMessageProcessor> messageProcessor;
     };
 }
