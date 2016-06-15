@@ -1,6 +1,7 @@
 #include "MessageHandler.h"
 
 #include <cassert>
+#include <sstream>
 
 #include <gloox/messagesession.h>
 #include <gloox/message.h>
@@ -11,7 +12,7 @@ namespace bot
 {
     MessageHandler::MessageHandler(gloox::MessageSession &session,
         task::TaskProvider &taskProvider)
-        :session(session), sender(session),
+        :session(session), sender(),
         messageProcessor(new MessageProcessor(sender, taskProvider))
     {}
 
@@ -22,12 +23,22 @@ namespace bot
         assert(messageProcessor.get());
         if(msg.subtype() == gloox::Message::Chat)
         {
-            messageProcessor->receive(msg.from().full(), msg.body());
+            messageProcessor->receive(msg.from().username(), msg.body());
+            const auto &msgs = sender.getMessages();
+            std::stringstream stream;
+            for(StringCol::size_type i = 0; i < msgs.size(); ++i)
+            {
+                stream<<msgs[i];
+                if(i+1 < msgs.size())
+                    stream<<std::endl;
+            }
+            session.send(stream.str());
+            sender.reset();
         }
     }
 
     void MessageHandler::Sender::send(const std::string &msg)
     {
-        session.send(msg);
+        messages.push_back(msg);
     }
 }

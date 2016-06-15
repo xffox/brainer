@@ -119,7 +119,7 @@ namespace bot
     {
         if(taskLogic.get())
         {
-            sendStats(*getTaskLogic());
+            sendStats(getTaskLogic()->getStats());
             send("quit");
             quit();
         }
@@ -143,7 +143,7 @@ namespace bot
         }
     }
 
-    void MessageProcessor::processAnswer(const std::string &from, const std::string &answer)
+    base::Nullable<MessageProcessor::Validity> MessageProcessor::processAnswer(const std::string &from, const std::string &answer)
     {
         if(taskLogic.get())
         {
@@ -151,18 +151,21 @@ namespace bot
             const auto descr = description(*taskLogic);
             if(answerTask(ans))
             {
-                sendValid(from, descr, ans, *taskLogic);
+                sendValid(from, descr, ans, taskLogic->getStats());
                 sendTask(*taskLogic);
+                return base::Nullable<Validity>(VALID);
             }
             else
             {
-                sendInvalid(from, descr, ans, *taskLogic);
+                sendInvalid(from, descr, ans);
+                return base::Nullable<Validity>(INVALID);
             }
         }
         else
         {
             send("no game is played now");
             sendNormHelp();
+            return base::Nullable<Validity>();
         }
     }
 
@@ -205,16 +208,15 @@ namespace bot
         send(strutil::fromCoreString(render.text()));
     }
 
-    void MessageProcessor::sendInvalid(const std::string &from, const core::String &descr,
-            const core::String &str, core::TaskLogic &logic)
+    void MessageProcessor::sendInvalid(const std::string &from,
+        const core::String &descr, const core::String &str)
     {
         send(strutil::fromCoreString(L"WRONG: " + descr + L" isn't " +  str));
     }
 
     void MessageProcessor::sendValid(const std::string &from, const core::String &descr,
-            const core::String &str, core::TaskLogic &logic)
+        const core::String &str, const core::TaskLogic::StatsCol &stats)
     {
-        const auto stats = logic.getStats();
         std::wstringstream stream;
         if(stats.empty())
             throw std::runtime_error("stats list is empty on valid result");
@@ -230,9 +232,8 @@ namespace bot
         send(strutil::fromCoreString(L"answer is " + str));
     }
 
-    void MessageProcessor::sendStats(core::TaskLogic &logic)
+    void MessageProcessor::sendStats(const core::TaskLogic::StatsCol &stats)
     {
-        const auto &stats = taskLogic->getStats();
         if(stats.empty())
             return;
         std::wstringstream stream;

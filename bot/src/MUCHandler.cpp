@@ -71,7 +71,7 @@ namespace bot
             return;
         if(msg.subtype() == gloox::Message::Groupchat)
         {
-            messageProcessor->receive(msg.from().full(), msg.body());
+            messageProcessor->receive(msg.from().resource(), msg.body());
         }
     }
 
