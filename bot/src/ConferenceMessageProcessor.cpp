@@ -22,10 +22,20 @@ namespace bot
         {
             if(*res == VALID)
             {
-                scores[from] += 1;
+                scores[from].right += 1;
+            }
+            else
+            {
+                scores[from].wrong += 1;
             }
         }
         return res;
+    }
+
+    void ConferenceMessageProcessor::processQuitCmd(const std::string &from, const StringList &args)
+    {
+        MessageProcessor::processQuitCmd(from, args);
+        scores.clear();
     }
 
     void ConferenceMessageProcessor::sendInvalid(const std::string &from, const core::String &descr,
@@ -49,32 +59,35 @@ namespace bot
 
     void ConferenceMessageProcessor::sendStats(const core::TaskLogic::StatsCol &stats)
     {
-        struct Score
+        struct SortScore
         {
             std::string name;
-            std::size_t score;
+            Score score;
         };
         struct ScoreLess
         {
-            bool operator()(const Score &left, const Score &right) const
+            bool operator()(const SortScore &left, const SortScore &right) const
             {
-                return left.score > right.score ||
-                    (left.score == right.score && left.name < right.name);
+                return left.score.right > right.score.right ||
+                    (left.score.right == right.score.right &&
+                     (left.score.wrong < right.score.wrong ||
+                      (left.score.wrong == right.score.wrong &&
+                       left.name < right.name)));
             }
         };
-        using SortedScoreSet = std::set<Score, ScoreLess>;
+        using SortedScoreSet = std::set<SortScore, ScoreLess>;
         if(!scores.empty())
         {
             SortedScoreSet sortedScores;
             std::transform(scores.begin(), scores.end(),
                 std::inserter(sortedScores, sortedScores.begin()),
-                [](const ScoreCountMap::value_type &p){return Score{p.first, p.second};});
+                [](const ScoreCountMap::value_type &p){return SortScore{p.first, p.second};});
             std::stringstream stream;
             stream<<"scores:"<<std::endl;
             for(auto iter = sortedScores.begin(); iter != sortedScores.end(); ++iter)
             {
                 const auto &p = *iter;
-                stream<<p.name<<": "<<p.score;
+                stream<<p.name<<": right:"<<p.score.right<<", wrong:"<<p.score.wrong;
                 auto nextIter = iter;
                 ++nextIter;
                 if(nextIter != sortedScores.end())

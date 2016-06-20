@@ -98,7 +98,7 @@ namespace bot
             sendNormHelp();
     }
 
-    void MessageProcessor::processPlayCmd(const std::string &from, const StringList &args)
+    void MessageProcessor::processPlayCmd(const std::string&, const StringList &args)
     {
         if(args.size() != 1)
         {
@@ -115,7 +115,7 @@ namespace bot
         sendTask(*getTaskLogic());
     }
 
-    void MessageProcessor::processQuitCmd(const std::string &from, const StringList &args)
+    void MessageProcessor::processQuitCmd(const std::string&, const StringList&)
     {
         if(taskLogic.get())
         {
@@ -129,7 +129,7 @@ namespace bot
         }
     }
 
-    void MessageProcessor::processSkipCmd(const std::string &from, const StringList &args)
+    void MessageProcessor::processSkipCmd(const std::string&, const StringList&)
     {
         if(taskLogic.get())
         {
@@ -208,13 +208,13 @@ namespace bot
         send(strutil::fromCoreString(render.text()));
     }
 
-    void MessageProcessor::sendInvalid(const std::string &from,
+    void MessageProcessor::sendInvalid(const std::string&,
         const core::String &descr, const core::String &str)
     {
         send(strutil::fromCoreString(L"WRONG: " + descr + L" isn't " +  str));
     }
 
-    void MessageProcessor::sendValid(const std::string &from, const core::String &descr,
+    void MessageProcessor::sendValid(const std::string&, const core::String &descr,
         const core::String &str, const core::TaskLogic::StatsCol &stats)
     {
         std::wstringstream stream;

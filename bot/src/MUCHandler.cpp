@@ -49,8 +49,7 @@ namespace bot
     {
     }
 
-    void MUCHandler::handleMUCError(gloox::MUCRoom *room,
-        gloox::StanzaError error)
+    void MUCHandler::handleMUCError(gloox::MUCRoom*, gloox::StanzaError error)
     {
         xlog::log().error("MUCHandler", "muc error: %d", error);
     }
