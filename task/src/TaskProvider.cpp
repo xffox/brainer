@@ -22,6 +22,7 @@
 #include "task/StringSet.h"
 #include "fact/FileFact.h"
 #include "csv/csv.h"
+#include "base/strutil.h"
 
 namespace task
 {
@@ -116,6 +117,36 @@ namespace task
             return tasks;
         }
 
+        DictTaskGenerator::TaskCollection readTagainiPronouns(
+            const std::string &filename)
+        {
+            std::wifstream stream(filename);
+            stream.imbue(std::locale(std::locale("")));
+            if(!stream.is_open())
+                throw std::runtime_error("can't read file");
+            const auto res = tagaini::readCollection(stream);
+            DictTaskGenerator::TaskCollection tasks;
+            transform(res.begin(), res.end(), std::back_inserter(tasks),
+                [](const tagaini::TaskCollection::value_type &v) {
+                    const auto &pronouns = std::get<1>(v);
+                    const auto &translations = std::get<2>(v);
+                    const core::String *key = nullptr;
+                    if(!pronouns.empty())
+                        key = &pronouns[0];
+                    else
+                        key = &std::get<0>(v);
+                    assert(key);
+                    std::wstringstream valueStream;
+                    valueStream<<*key<<L" ["<<std::get<0>(v)
+                    <<L"] ("
+                    <<base::strutil::join(translations.begin(), translations.end(), core::String(L", "))
+                    <<L')';
+                return std::make_pair(StringCollection{*key},
+                    StringCollection{valueStream.str()});
+                });
+            return tasks;
+        }
+
         class PropertyPredicate: public FactTaskGenerator::Predicate
         {
         public:
@@ -192,7 +223,12 @@ namespace task
                         std::unique_ptr<fact::IFact>(
                             new fact::FileFact(filename)),
                         rand()));
-                })
+                }),
+            std::make_pair("tagaini_typing", [](const std::string &filename) {
+                return std::unique_ptr<core::ITaskGenerator>(
+                    new DictTaskGenerator(rand(),
+                        readTagainiPronouns(filename)));
+                }),
         }
     {}
 

@@ -15,6 +15,8 @@ namespace bot
 
     protected:
         virtual base::Nullable<Validity> processAnswer(const std::string &from, const std::string &answer) override;
+        virtual void processQuitCmd(const std::string &from, const StringList &args) override;
+
         virtual void sendInvalid(const std::string &from, const core::String &descr,
             const core::String &str) override;
         virtual void sendValid(const std::string &from, const core::String &descr,
@@ -22,7 +24,15 @@ namespace bot
         virtual void sendStats(const core::TaskLogic::StatsCol &stats) override;
 
     private:
-        using ScoreCountMap = std::unordered_map<std::string, std::size_t>;
+        struct Score
+        {
+            Score():right(0), wrong(0){}
+            Score(std::size_t right, std::size_t wrong)
+                :right(right), wrong(wrong){}
+            std::size_t right;
+            std::size_t wrong;
+        };
+        using ScoreCountMap = std::unordered_map<std::string, Score>;
 
     private:
         ScoreCountMap scores;
