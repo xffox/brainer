@@ -11,19 +11,15 @@ namespace task
 {
     namespace tagaini
     {
-        core::String trim(const core::String &str)
-        {
-            core::String::size_type i = 0;
-            while(i < str.size() && std::iswspace(str[i]))
-                ++i;
-            core::String::size_type j = str.size();
-            while(j > i && (std::iswspace(str[j-1]) || str[j-1] == L'.'))
-                --j;
-            return str.substr(i, j-i);
-        }
-
         TaskCollection readCollection(std::wistream &stream)
         {
+            struct Trimmer
+            {
+                bool operator()(core::String::value_type ch) const
+                {
+                    return std::iswspace(ch) || ch == L'.';
+                }
+            };
             TaskCollection result;
             csv::Csv<wchar_t> reader(stream, L'\t', L'\0', L'\\');
             while(true)
@@ -35,7 +31,10 @@ namespace task
                     throw std::runtime_error("invalid row format");
                 auto values = base::strutil::split(
                     row.first[2].begin(), row.first[2].end(), L',');
-                std::transform(values.begin(), values.end(), values.begin(), trim);
+                std::transform(values.begin(), values.end(), values.begin(),
+                    [](const decltype(values)::value_type &str) {
+                        return base::strutil::trim(str, Trimmer());
+                    });
                 auto prons = base::strutil::split(
                     row.first[1].begin(), row.first[1].end(), L',');
                 result.push_back(std::make_tuple(row.first[0], prons, values));

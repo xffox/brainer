@@ -13,7 +13,7 @@ namespace task
     {
     public:
         DictTask(const StringCollection &keys, const StringCollection &values);
-        
+
         virtual bool validate(const core::String &result) const;
         virtual core::String answer() const;
         virtual void describe(core::IRender &render) const;
