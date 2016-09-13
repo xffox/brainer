@@ -23,6 +23,7 @@
 #include "fact/FileFact.h"
 #include "csv/csv.h"
 #include "base/strutil.h"
+#include "wordgen.h"
 
 namespace task
 {
@@ -32,7 +33,7 @@ namespace task
         {
             std::string name;
             std::string type;
-            std::string filename;
+            TaskProvider::StringCol filenames;
         };
 
         using TaskConfigCollection = std::vector<TaskConfig>;
@@ -53,8 +54,19 @@ namespace task
                 if(row.first.size() != COLUMNS)
                     throw new std::runtime_error(
                         "invalid number of columns in tasks config file");
+                std::stringstream ss(row.first[2]);
+                csv::Csv<char> filenamesReader(ss, ';');
+                TaskProvider::StringCol filenames;
+                while(true)
+                {
+                    const auto filenamesRow = filenamesReader.row();
+                    if(!filenamesRow.second)
+                        break;
+                    filenames.insert(filenames.end(),
+                        filenamesRow.first.begin(), filenamesRow.first.end());
+                }
                 tasksConfig.push_back(TaskConfig{row.first[0], row.first[1],
-                    row.first[2]});
+                    filenames});
             }
             return tasksConfig;
         }
@@ -169,66 +181,82 @@ namespace task
 
     TaskProvider::TaskProvider(const std::string &configFilename)
         :configFilename(configFilename), creators{
-            std::make_pair("hex", [](const std::string&) {
+            std::make_pair("hex", [](const StringCol&) {
                 return std::unique_ptr<core::ITaskGenerator>(
                     new HexByteTaskGenerator(rand()));
                 }),
-            std::make_pair("arithmetic", [](const std::string&) {
+            std::make_pair("arithmetic", [](const StringCol&) {
                 return std::unique_ptr<core::ITaskGenerator>(
                     new ArithmeticTaskGenerator(rand()));
                 }),
-            std::make_pair("config", [](const std::string &filename) {
-                base::FileConfig fc(filename);
+            std::make_pair("config", [](const StringCol &filenames) {
+                base::FileConfig fc(filenames[0]);
                 return std::unique_ptr<core::ITaskGenerator>(
                     new DictTaskGenerator(rand(),
                         readTasksFromConfig(fc.read())));
                 }),
-            std::make_pair("tagaini", [](const std::string &filename) {
+            std::make_pair("tagaini", [](const StringCol &filenames) {
+                if(filenames.size() != 1)
+                    throw std::runtime_error("filenames param mismatch");
                 return std::unique_ptr<core::ITaskGenerator>(
                     new DictTaskGenerator(rand(),
-                        readTagaini(filename)));
+                        readTagaini(filenames[0])));
                 }),
-            std::make_pair("tagaini_rev", [](const std::string &filename) {
+            std::make_pair("tagaini_rev", [](const StringCol &filenames) {
+                if(filenames.size() != 1)
+                    throw std::runtime_error("filenames param mismatch");
                 return std::unique_ptr<core::ITaskGenerator>(
                     new DictTaskGenerator(rand(),
-                        readTagaini(filename), true));
+                        readTagaini(filenames[0]), true));
                 }),
-            std::make_pair("tagaini_prons", [](const std::string &filename) {
+            std::make_pair("tagaini_prons", [](const StringCol &filenames) {
+                if(filenames.size() != 1)
+                    throw std::runtime_error("filenames param mismatch");
                 return std::unique_ptr<core::ITaskGenerator>(
                     new DictTaskGenerator(rand(),
-                        readTagainiWithProns(filename)));
+                        readTagainiWithProns(filenames[0])));
                 }),
-            std::make_pair("tagaini_prons_rev", [](const std::string &filename) {
+            std::make_pair("tagaini_prons_rev", [](const StringCol &filenames) {
+                if(filenames.size() != 1)
+                    throw std::runtime_error("filenames param mismatch");
                 return std::unique_ptr<core::ITaskGenerator>(
                     new DictTaskGenerator(rand(),
-                        readTagainiWithProns(filename), true));
+                        readTagainiWithProns(filenames[0]), true));
                 }),
-            std::make_pair("multiletter", [](const std::string &filename) {
-                base::FileConfig fc(filename);
+            std::make_pair("multiletter", [](const StringCol &filenames) {
+                if(filenames.size() != 1) throw std::runtime_error("filenames param mismatch");
+                base::FileConfig fc(filenames[0]);
                 return std::unique_ptr<core::ITaskGenerator>(
                     new MultiLetterTaskGenerator(rand(),
                         readMultiLetterTasksFromConfig(fc.read())));
                 }),
-            std::make_pair("fact", [](const std::string &filename) {
+            std::make_pair("fact", [](const StringCol &filenames) {
+                if(filenames.size() != 1)
+                    throw std::runtime_error("filenames param mismatch");
                 return std::unique_ptr<core::ITaskGenerator>(
                     new FactTaskGenerator(rand(),
                         std::unique_ptr<fact::IFact>(
-                            new fact::FileFact(filename)),
+                            new fact::FileFact(filenames[0])),
                         std::unique_ptr<FactTaskGenerator::Predicate>(
                             new PropertyPredicate())));
                 }),
-            std::make_pair("description", [](const std::string &filename) {
+            std::make_pair("description", [](const StringCol &filenames) {
+                if(filenames.size() != 1)
+                    throw std::runtime_error("filenames param mismatch");
                 return std::unique_ptr<core::ITaskGenerator>(
                     new FactDescriptionTaskGenerator(
                         std::unique_ptr<fact::IFact>(
-                            new fact::FileFact(filename)),
+                            new fact::FileFact(filenames[0])),
                         rand()));
                 }),
-            std::make_pair("tagaini_typing", [](const std::string &filename) {
+            std::make_pair("tagaini_typing", [](const StringCol &filenames) {
+                if(filenames.size() != 1)
+                    throw std::runtime_error("filenames param mismatch");
                 return std::unique_ptr<core::ITaskGenerator>(
                     new DictTaskGenerator(rand(),
-                        readTagainiPronouns(filename)));
+                        readTagainiPronouns(filenames[0])));
                 }),
+            std::make_pair("wordgen", wordgen::createTaskGenerator)
         }
     {}
 
@@ -255,7 +283,7 @@ namespace task
                 auto iter = creators.find(task.type);
                 if(iter == creators.end())
                     throw std::runtime_error("invalid task type configured");
-                return iter->second(task.filename);
+                return iter->second(task.filenames);
             }
         }
         throw std::invalid_argument("invalid task name");

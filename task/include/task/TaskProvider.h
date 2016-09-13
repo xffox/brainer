@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <functional>
 #include <string>
+#include <vector>
 
 #include "core/ITaskProvider.h"
 
@@ -11,6 +12,9 @@ namespace task
 {
     class TaskProvider: public core::ITaskProvider
     {
+    public:
+        using StringCol = std::vector<std::string>;
+
     public:
         TaskProvider(const std::string &configFilename);
 
@@ -21,7 +25,7 @@ namespace task
 
     private:
         using TaskTypeCreatorMap = std::unordered_map<std::string,
-              std::function<std::unique_ptr<core::ITaskGenerator>(const std::string&)>>;
+              std::function<std::unique_ptr<core::ITaskGenerator>(const StringCol&)>>;
 
     private:
         std::string configFilename;
