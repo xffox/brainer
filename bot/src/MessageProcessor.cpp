@@ -205,23 +205,26 @@ namespace bot
     {
         StringRender render;
         logic.describe(render);
-        send(strutil::fromCoreString(render.text()));
+        std::stringstream ss;
+        ss<<"TASK:"<<std::endl;
+        ss<<strutil::fromCoreString(render.text());
+        send(ss.str());
     }
 
     void MessageProcessor::sendInvalid(const std::string&,
-        const core::String &descr, const core::String &str)
+        const core::String&, const core::String &str)
     {
-        send(strutil::fromCoreString(L"WRONG: " + descr + L" isn't " +  str));
+        send(strutil::fromCoreString(L"WRONG: " + str));
     }
 
-    void MessageProcessor::sendValid(const std::string&, const core::String &descr,
+    void MessageProcessor::sendValid(const std::string&, const core::String&,
         const core::String &str, const core::TaskLogic::StatsCol &stats)
     {
         std::wstringstream stream;
         if(stats.empty())
             throw std::runtime_error("stats list is empty on valid result");
         const auto elapsedUs = stats.back().timeUs;
-        stream<<L"RIGHT: "<<descr<<L" is "<<str
+        stream<<L"RIGHT: "<<str
             <<" ("<<std::setprecision(2)<<std::fixed
             <<static_cast<double>(elapsedUs)/1000000.0<<"s)";
         send(strutil::fromCoreString(stream.str()));
@@ -229,7 +232,7 @@ namespace bot
 
     void MessageProcessor::sendAnswer(const core::String &str)
     {
-        send(strutil::fromCoreString(L"answer is " + str));
+        send(strutil::fromCoreString(L"ANSWER: " + str));
     }
 
     void MessageProcessor::sendStats(const core::TaskLogic::StatsCol &stats)

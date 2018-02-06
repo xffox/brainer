@@ -11,10 +11,21 @@
 
 namespace bot
 {
-    MUCHandler::MUCHandler(gloox::MUCRoom &room,
+    MUCHandler::MUCHandler(gloox::Client &client, const std::string &roomJid,
         task::TaskProvider &taskProvider)
-        :room(room), sender(), messageProcessor(new ConferenceMessageProcessor(sender, taskProvider))
-    {}
+        :room(&client, roomJid, nullptr), sender(), messageProcessor(new ConferenceMessageProcessor(sender, taskProvider))
+    {
+        room.registerMUCRoomHandler(this);
+        room.registerMUCRoomConfigHandler(this);
+        room.join();
+    }
+
+    MUCHandler::~MUCHandler()
+    {
+        room.removeMUCRoomHandler();
+        room.removeMUCRoomConfigHandler();
+        room.leave();
+    }
 
     void MUCHandler::handleMUCConfigList(gloox::MUCRoom*, const gloox::MUCListItemList&, gloox::MUCOperation)
     {

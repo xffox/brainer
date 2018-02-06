@@ -5,6 +5,7 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <random>
 
 #include "core/ITaskProvider.h"
 
@@ -29,6 +30,8 @@ namespace task
 
     private:
         std::string configFilename;
+        std::seed_seq seed;
+        std::minstd_rand random;
         TaskTypeCreatorMap creators;
     };
 }

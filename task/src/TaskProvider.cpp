@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 #include <cstddef>
+#include <limits>
 
 #include "base/FileConfig.h"
 #include "core/ITaskGenerator.h"
@@ -15,15 +16,13 @@
 #include "task/ArithmeticTaskGenerator.h"
 #include "task/DictTaskGenerator.h"
 #include "task/MultiLetterTaskGenerator.h"
-#include "task/FactTaskGenerator.h"
 #include "task/StringCollection.h"
-#include "task/FactDescriptionTaskGenerator.h"
 #include "task/tagaini.h"
 #include "task/StringSet.h"
-#include "fact/FileFact.h"
 #include "csv/csv.h"
 #include "base/strutil.h"
 #include "wordgen.h"
+#include "wiktionary.h"
 
 namespace task
 {
@@ -159,104 +158,87 @@ namespace task
             return tasks;
         }
 
-        class PropertyPredicate: public FactTaskGenerator::Predicate
+        template<class Generator>
+        int genSeed(Generator &generator)
         {
-        public:
-            PropertyPredicate()
-                :properties{
-                    L"child astronomical body",
-                    L"parent astronomical body"
-                }
-            {}
-
-            virtual bool accept(const core::String &property) const override
-            {
-                return properties.find(property) != properties.end();
-            }
-
-        private:
-            task::StringSet properties;
-        };
+            std::uniform_int_distribution<int> dis(
+                std::numeric_limits<int>::min(),
+                std::numeric_limits<int>::max());
+            return dis(generator);
+        }
     }
 
     TaskProvider::TaskProvider(const std::string &configFilename)
-        :configFilename(configFilename), creators{
-            std::make_pair("hex", [](const StringCol&) {
+        :configFilename(configFilename),
+        seed({std::random_device()()}), random(seed), creators{
+            std::make_pair("hex", [this](const StringCol&) {
                 return std::unique_ptr<core::ITaskGenerator>(
-                    new HexByteTaskGenerator(rand()));
+                    new HexByteTaskGenerator(genSeed(random)));
                 }),
-            std::make_pair("arithmetic", [](const StringCol&) {
+            std::make_pair("arithmetic", [this](const StringCol&) {
                 return std::unique_ptr<core::ITaskGenerator>(
-                    new ArithmeticTaskGenerator(rand()));
+                    new ArithmeticTaskGenerator(genSeed(random)));
                 }),
-            std::make_pair("config", [](const StringCol &filenames) {
+            std::make_pair("config", [this](const StringCol &filenames) {
                 base::FileConfig fc(filenames[0]);
                 return std::unique_ptr<core::ITaskGenerator>(
-                    new DictTaskGenerator(rand(),
+                    new DictTaskGenerator(genSeed(random),
                         readTasksFromConfig(fc.read())));
                 }),
-            std::make_pair("tagaini", [](const StringCol &filenames) {
+            std::make_pair("tagaini", [this](const StringCol &filenames) {
                 if(filenames.size() != 1)
                     throw std::runtime_error("filenames param mismatch");
                 return std::unique_ptr<core::ITaskGenerator>(
-                    new DictTaskGenerator(rand(),
+                    new DictTaskGenerator(genSeed(random),
                         readTagaini(filenames[0])));
                 }),
-            std::make_pair("tagaini_rev", [](const StringCol &filenames) {
+            std::make_pair("tagaini_rev", [this](const StringCol &filenames) {
                 if(filenames.size() != 1)
                     throw std::runtime_error("filenames param mismatch");
                 return std::unique_ptr<core::ITaskGenerator>(
-                    new DictTaskGenerator(rand(),
+                    new DictTaskGenerator(genSeed(random),
                         readTagaini(filenames[0]), true));
                 }),
-            std::make_pair("tagaini_prons", [](const StringCol &filenames) {
+            std::make_pair("tagaini_prons", [this](const StringCol &filenames) {
                 if(filenames.size() != 1)
                     throw std::runtime_error("filenames param mismatch");
                 return std::unique_ptr<core::ITaskGenerator>(
-                    new DictTaskGenerator(rand(),
+                    new DictTaskGenerator(genSeed(random),
                         readTagainiWithProns(filenames[0])));
                 }),
-            std::make_pair("tagaini_prons_rev", [](const StringCol &filenames) {
+            std::make_pair("tagaini_prons_rev", [this](const StringCol &filenames) {
                 if(filenames.size() != 1)
                     throw std::runtime_error("filenames param mismatch");
                 return std::unique_ptr<core::ITaskGenerator>(
-                    new DictTaskGenerator(rand(),
+                    new DictTaskGenerator(genSeed(random),
                         readTagainiWithProns(filenames[0]), true));
                 }),
-            std::make_pair("multiletter", [](const StringCol &filenames) {
+            std::make_pair("multiletter", [this](const StringCol &filenames) {
                 if(filenames.size() != 1) throw std::runtime_error("filenames param mismatch");
                 base::FileConfig fc(filenames[0]);
                 return std::unique_ptr<core::ITaskGenerator>(
-                    new MultiLetterTaskGenerator(rand(),
+                    new MultiLetterTaskGenerator(genSeed(random),
                         readMultiLetterTasksFromConfig(fc.read())));
                 }),
-            std::make_pair("fact", [](const StringCol &filenames) {
+            std::make_pair("tagaini_typing", [this](const StringCol &filenames) {
                 if(filenames.size() != 1)
                     throw std::runtime_error("filenames param mismatch");
                 return std::unique_ptr<core::ITaskGenerator>(
-                    new FactTaskGenerator(rand(),
-                        std::unique_ptr<fact::IFact>(
-                            new fact::FileFact(filenames[0])),
-                        std::unique_ptr<FactTaskGenerator::Predicate>(
-                            new PropertyPredicate())));
-                }),
-            std::make_pair("description", [](const StringCol &filenames) {
-                if(filenames.size() != 1)
-                    throw std::runtime_error("filenames param mismatch");
-                return std::unique_ptr<core::ITaskGenerator>(
-                    new FactDescriptionTaskGenerator(
-                        std::unique_ptr<fact::IFact>(
-                            new fact::FileFact(filenames[0])),
-                        rand()));
-                }),
-            std::make_pair("tagaini_typing", [](const StringCol &filenames) {
-                if(filenames.size() != 1)
-                    throw std::runtime_error("filenames param mismatch");
-                return std::unique_ptr<core::ITaskGenerator>(
-                    new DictTaskGenerator(rand(),
+                    new DictTaskGenerator(genSeed(random),
                         readTagainiPronouns(filenames[0])));
                 }),
-            std::make_pair("wordgen", wordgen::createTaskGenerator)
+            std::make_pair("wordgen", wordgen::createTaskGenerator),
+            std::make_pair("wiktionary", [this](const StringCol &filenames){
+                    if(filenames.size() != 1)
+                        throw std::runtime_error("filenames param mismatch");
+                    std::wifstream stream(filenames[0]);
+                    stream.imbue(std::locale(std::locale("")));
+                    if(!stream.is_open())
+                        throw std::runtime_error("can't read file");
+                    return std::unique_ptr<core::ITaskGenerator>(
+                        new DictTaskGenerator(genSeed(random),
+                            wiktionary::readWiktionaryDefinitions(stream)));
+                })
         }
     {}
 

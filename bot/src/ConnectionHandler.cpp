@@ -11,11 +11,15 @@ namespace bot
         task::TaskProvider &taskProvider,
         const std::string &roomJid)
         :roomJid(roomJid), client(client), taskProvider(taskProvider),
-        room(), mucHandler()
-    {}
+        mucHandler(), messageHandlers()
+    {
+        client.registerConnectionListener(this);
+        client.registerMessageSessionHandler(this);
+    }
 
     ConnectionHandler::~ConnectionHandler()
     {
+        client.removeConnectionListener(this);
     }
 
     void ConnectionHandler::onConnect()
@@ -27,6 +31,7 @@ namespace bot
     void ConnectionHandler::onDisconnect(gloox::ConnectionError e)
     {
         leaveRoom();
+        messageHandlers.clear();
         switch(e)
         {
         case gloox::ConnNoError:
@@ -48,6 +53,32 @@ namespace bot
         return true;
     }
 
+    void ConnectionHandler::onResourceBindError(const gloox::Error*)
+    {
+        client.disconnect();
+    }
+
+    void ConnectionHandler::onSessionCreateError(const gloox::Error*)
+    {
+        client.disconnect();
+    }
+
+    void ConnectionHandler::handleMessageSession(
+        gloox::MessageSession *session)
+    {
+        assert(session);
+        std::shared_ptr<MessageHandler> handler(
+            new MessageHandler(client, session, taskProvider));
+        try
+        {
+            messageHandlers.push_back(handler);
+        }
+        catch(const std::exception &exc)
+        {
+            throw exc;
+        }
+    }
+
     void ConnectionHandler::joinRoom()
     {
         leaveRoom();
@@ -55,11 +86,7 @@ namespace bot
             return;
         xlog::log().info("ConnectionHandler", "joining room: '%s'",
             roomJid.c_str());
-        room.reset(new gloox::MUCRoom(&client, roomJid, nullptr));
-        mucHandler.reset(new MUCHandler(*room, taskProvider));
-        room->registerMUCRoomHandler(mucHandler.get());
-        room->registerMUCRoomConfigHandler(mucHandler.get());
-        room->join();
+        mucHandler.reset(new MUCHandler(client, roomJid, taskProvider));
     }
 
     void ConnectionHandler::leaveRoom()
@@ -68,12 +95,7 @@ namespace bot
         {
             xlog::log().info("ConnectionHandler", "leaving room: '%s'",
                 roomJid.c_str());
-            assert(room.get());
-            room->removeMUCRoomHandler();
-            room->removeMUCRoomConfigHandler();
-            room->leave();
             mucHandler.reset();
-            room.reset();
         }
     }
 }

@@ -21,6 +21,10 @@ namespace csv
             CPPUNIT_TEST(testDelimEscape);
             CPPUNIT_TEST(testSingleQuote);
             CPPUNIT_TEST(testMultipleQuote);
+            CPPUNIT_TEST(testQuotedEol);
+            CPPUNIT_TEST(testSimpleWithoutEsc);
+            CPPUNIT_TEST(testQuotedWithoutEsc);
+            CPPUNIT_TEST(testQuotedBracesWithoutEsc);
             CPPUNIT_TEST_SUITE_END();
         public:
             void testEmpty()
@@ -128,7 +132,73 @@ namespace csv
                 Csv<char> csv(ss);
                 auto res = csv.row();
                 CPPUNIT_ASSERT(res.second);
-                std::vector<std::string> EXP{{"first,morefirst", "second", "third,morethird"}};
+                std::vector<std::string> EXP{"first,morefirst", "second", "third,morethird"};
+                CPPUNIT_ASSERT(EXP == res.first);
+                res = csv.row();
+                CPPUNIT_ASSERT(!res.second);
+            }
+
+            void testQuotedEol()
+            {
+                const std::string val(
+                    "first,\"second\nthird\"\n"
+                    "\"fourth\nfifth\",six");
+                const std::vector<std::string> EXP1{
+                    "first", "second\nthird"};
+                const std::vector<std::string> EXP2{
+                    "fourth\nfifth", "six"};
+                std::stringstream ss(val);
+                Csv<char> csv(ss);
+                auto res = csv.row();
+                CPPUNIT_ASSERT(res.second);
+                CPPUNIT_ASSERT(EXP1 == res.first);
+                res = csv.row();
+                CPPUNIT_ASSERT(res.second);
+                CPPUNIT_ASSERT(EXP2 == res.first);
+                res = csv.row();
+                CPPUNIT_ASSERT(!res.second);
+            }
+
+            void testSimpleWithoutEsc()
+            {
+                const std::string val(
+                    "first,second");
+                const std::vector<std::string> EXP{
+                    "first", "second"};
+                std::stringstream ss(val);
+                Csv<char> csv(ss, ',', '"', '\0');
+                auto res = csv.row();
+                CPPUNIT_ASSERT(res.second);
+                CPPUNIT_ASSERT(EXP == res.first);
+                res = csv.row();
+                CPPUNIT_ASSERT(!res.second);
+            }
+
+            void testQuotedWithoutEsc()
+            {
+                const std::string val(
+                    "first,\"second third\"");
+                const std::vector<std::string> EXP{
+                    "first", "second third"};
+                std::stringstream ss(val);
+                Csv<char> csv(ss, ',', '"', '\0');
+                auto res = csv.row();
+                CPPUNIT_ASSERT(res.second);
+                CPPUNIT_ASSERT(EXP == res.first);
+                res = csv.row();
+                CPPUNIT_ASSERT(!res.second);
+            }
+
+            void testQuotedBracesWithoutEsc()
+            {
+                const std::string val(
+                    "first,\"second\"\"third\"\"\"");
+                const std::vector<std::string> EXP{
+                    "first", "second\"third\""};
+                std::stringstream ss(val);
+                Csv<char> csv(ss, ',', '"', '\0');
+                auto res = csv.row();
+                CPPUNIT_ASSERT(res.second);
                 CPPUNIT_ASSERT(EXP == res.first);
                 res = csv.row();
                 CPPUNIT_ASSERT(!res.second);

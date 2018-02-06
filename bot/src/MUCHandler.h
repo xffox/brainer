@@ -6,6 +6,7 @@
 #include <gloox/mucroom.h>
 #include <gloox/mucroomhandler.h>
 #include <gloox/mucroomconfighandler.h>
+#include <gloox/client.h>
 
 #include "ConferenceMessageProcessor.h"
 #include "CollectingSender.h"
@@ -22,7 +23,9 @@ namespace bot
         public gloox::MUCRoomConfigHandler
     {
     public:
-        MUCHandler(gloox::MUCRoom &room, task::TaskProvider &taskProvider);
+        MUCHandler(gloox::Client &client, const std::string &roomJid,
+            task::TaskProvider &taskProvider);
+        ~MUCHandler();
 
     protected:
         virtual void handleMUCConfigList(gloox::MUCRoom*, const gloox::MUCListItemList&, gloox::MUCOperation);
@@ -42,7 +45,7 @@ namespace bot
         virtual void handleMUCItems(gloox::MUCRoom*, const gloox::Disco::ItemList&);
 
     private:
-        gloox::MUCRoom &room;
+        gloox::MUCRoom room;
         CollectingSender sender;
         std::unique_ptr<ConferenceMessageProcessor> messageProcessor;
     };

@@ -11,7 +11,6 @@
 #include "xlog/xlog.h"
 
 #include "ConnectionHandler.h"
-#include "MessageSessionHandler.h"
 
 namespace bot
 {
@@ -20,19 +19,15 @@ namespace bot
         const std::string &resource, const std::string &room)
         :cont(true), taskProvider(new task::TaskProvider(tasksFile)),
         client(new gloox::Client(gloox::JID(jid), password)),
-        connectionHandler(new ConnectionHandler(*client, *taskProvider, room)),
-        messageSessionHandler(new MessageSessionHandler(*taskProvider))
+        connectionHandler(new ConnectionHandler(*client, *taskProvider, room))
     {
         client->setResource(resource);
-        client->registerConnectionListener(connectionHandler.get());
-        client->registerMessageSessionHandler(messageSessionHandler.get());
     }
 
     Bot::~Bot()
     {
         assert(client.get());
         assert(connectionHandler.get());
-        client->removeConnectionListener(connectionHandler.get());
     }
 
     void Bot::run()

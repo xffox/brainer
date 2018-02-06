@@ -3,18 +3,22 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <gloox/connectionlistener.h>
 #include <gloox/mucroom.h>
 #include <gloox/client.h>
+#include <gloox/messagesessionhandler.h>
 
 #include "task/TaskProvider.h"
+#include "MessageHandler.h"
 
 namespace bot
 {
     class MUCHandler;
 
-    class ConnectionHandler: public gloox::ConnectionListener
+    class ConnectionHandler: public gloox::ConnectionListener,
+        public gloox::MessageSessionHandler
     {
     public:
         ConnectionHandler(gloox::Client &client,
@@ -23,21 +27,28 @@ namespace bot
         virtual ~ConnectionHandler();
 
     protected:
-        virtual void onConnect();
-        virtual void onDisconnect(gloox::ConnectionError e);
-        virtual bool onTLSConnect(const gloox::CertInfo& info);
+        virtual void onConnect() override;
+        virtual void onDisconnect(gloox::ConnectionError e) override;
+        virtual bool onTLSConnect(const gloox::CertInfo& info) override;
+        virtual void onResourceBindError(const gloox::Error *error) override;
+        virtual void onSessionCreateError(const gloox::Error *error) override;
+        virtual void handleMessageSession(gloox::MessageSession *session) override;
+
+    private:
+        using MessageHandlerCollection =
+            std::vector<std::shared_ptr<MessageHandler>>;
 
     private:
         void joinRoom();
         void leaveRoom();
-        
+
     private:
         std::string roomJid;
         gloox::Client &client;
         task::TaskProvider &taskProvider;
 
-        std::unique_ptr<gloox::MUCRoom> room;
         std::unique_ptr<MUCHandler> mucHandler;
+        MessageHandlerCollection messageHandlers;
     };
 }
 

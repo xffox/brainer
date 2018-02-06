@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <gloox/messagehandler.h>
+#include <gloox/client.h>
 
 #include "MessageProcessor.h"
 #include "CollectingSender.h"
@@ -19,15 +20,17 @@ namespace bot
     class MessageHandler: public gloox::MessageHandler
     {
     public:
-        MessageHandler(gloox::MessageSession &session,
+        MessageHandler(gloox::Client &client, gloox::MessageSession *session,
             task::TaskProvider &taskProvider);
+        ~MessageHandler();
 
     protected:
         virtual void handleMessage(const gloox::Message& msg,
             gloox::MessageSession *session);
 
     private:
-        gloox::MessageSession &session;
+        gloox::Client &client;
+        gloox::MessageSession *session;
         CollectingSender sender;
         std::unique_ptr<MessageProcessor> messageProcessor;
     };

@@ -10,11 +10,21 @@
 
 namespace bot
 {
-    MessageHandler::MessageHandler(gloox::MessageSession &session,
+    MessageHandler::MessageHandler(gloox::Client &client, gloox::MessageSession *session,
         task::TaskProvider &taskProvider)
-        :session(session), sender(),
+        :client(client), session(session), sender(),
         messageProcessor(new MessageProcessor(sender, taskProvider))
-    {}
+    {
+        session->registerMessageHandler(this);
+    }
+
+    MessageHandler::~MessageHandler()
+    {
+        session->removeMessageHandler();
+        // according to the documentation this shouldn't be called
+        // in the initial handler, probably needs to be handled properly
+        client.disposeMessageSession(session);
+    }
 
     // TODO: measure response time
     void MessageHandler::handleMessage(const gloox::Message& msg,
@@ -32,7 +42,7 @@ namespace bot
                 if(i+1 < msgs.size())
                     stream<<std::endl;
             }
-            session.send(stream.str());
+            session->send(stream.str());
             sender.reset();
         }
     }

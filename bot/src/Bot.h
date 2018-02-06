@@ -11,7 +11,6 @@
 namespace bot
 {
     class ConnectionHandler;
-    class MessageSessionHandler;
 
     class Bot
     {
@@ -28,7 +27,6 @@ namespace bot
         std::unique_ptr<task::TaskProvider> taskProvider;
         std::unique_ptr<gloox::Client> client;
         std::unique_ptr<ConnectionHandler> connectionHandler;
-        std::unique_ptr<MessageSessionHandler> messageSessionHandler;
     };
 }
 
