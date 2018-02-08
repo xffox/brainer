@@ -22,7 +22,7 @@
 #include "csv/csv.h"
 #include "base/strutil.h"
 #include "wordgen.h"
-#include "wiktionary.h"
+#include "task/inner/wiktionary.h"
 
 namespace task
 {
@@ -237,7 +237,7 @@ namespace task
                         throw std::runtime_error("can't read file");
                     return std::unique_ptr<core::ITaskGenerator>(
                         new DictTaskGenerator(genSeed(random),
-                            wiktionary::readWiktionaryDefinitions(stream)));
+                            inner::wiktionary::readWiktionaryDefinitions(stream)));
                 })
         }
     {}
