@@ -13,15 +13,15 @@ namespace task
 {
 namespace inner
 {
-    namespace wiktionary
-    {
-        using TaskCollection =
-            std::vector<std::pair<StringCollection, StringCollection>>;
+namespace wiktionary
+{
+    using TaskCollection =
+        std::vector<std::pair<StringCollection, StringCollection>>;
 
-        TaskCollection readWiktionaryDefinitions(std::wistream &stream);
-        core::String prepareDescription(const core::String &descr,
-            const core::String &term);
-    }
+    TaskCollection readWiktionaryDefinitions(std::wistream &stream);
+    core::String prepareDescription(const core::String &descr,
+        const core::String &term);
+}
 }
 }
 
