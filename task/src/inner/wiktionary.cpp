@@ -19,6 +19,25 @@ namespace wiktionary
         constexpr std::size_t COLUMNS = 2;
         constexpr double DROP_SIMILARITY = 0.7;
         constexpr std::size_t MIN_WORDS = 4;
+
+        bool suitableTerm(const core::String &term)
+        {
+            return std::all_of(
+                std::begin(term), std::end(term),
+                    [](core::String::value_type v){
+                        if(!std::iswprint(v) || iswspace(v))
+                            return false;
+                        if(std::iswalpha(v))
+                        {
+                            const auto lv = std::towlower(v);
+                            return lv >= L'a' && lv <= L'z';
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                });
+        }
     }
 
     core::String prepareDescription(const core::String &descr,
@@ -101,21 +120,7 @@ namespace wiktionary
                 break;
             if(row.first.size() != COLUMNS)
                 throw std::runtime_error("invalid row format");
-            if(!std::all_of(
-                    std::begin(row.first[0]), std::end(row.first[0]),
-                    [](core::String::value_type v){
-                        if(!std::iswprint(v))
-                            return false;
-                        if(std::iswalpha(v))
-                        {
-                            const auto lv = std::towlower(v);
-                            return lv >= L'a' && lv <= L'z';
-                        }
-                        else
-                        {
-                            return true;
-                        }
-                    }))
+            if(!suitableTerm(row.first[0]))
             {
                 continue;
             }
