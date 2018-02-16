@@ -21,6 +21,7 @@ namespace wiktionary
     TaskCollection readWiktionaryDefinitions(std::wistream &stream);
     core::String prepareDescription(const core::String &descr,
         const core::String &term);
+    bool suitableTerm(const core::String &term);
 }
 }
 }

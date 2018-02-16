@@ -18,26 +18,7 @@ namespace wiktionary
     {
         constexpr std::size_t COLUMNS = 2;
         constexpr double DROP_SIMILARITY = 0.7;
-        constexpr std::size_t MIN_WORDS = 4;
-
-        bool suitableTerm(const core::String &term)
-        {
-            return std::all_of(
-                std::begin(term), std::end(term),
-                    [](core::String::value_type v){
-                        if(!std::iswprint(v) || iswspace(v))
-                            return false;
-                        if(std::iswalpha(v))
-                        {
-                            const auto lv = std::towlower(v);
-                            return lv >= L'a' && lv <= L'z';
-                        }
-                        else
-                        {
-                            return true;
-                        }
-                });
-        }
+        constexpr std::size_t MIN_WORDS = 3;
     }
 
     core::String prepareDescription(const core::String &descr,
@@ -46,11 +27,13 @@ namespace wiktionary
         std::size_t pos = 0;
         core::String result;
         bool first = true;
-        while(pos < descr.size())
+        const auto descrSz = descr.size();
+        const auto termSz = term.size();
+        while(pos < descrSz)
         {
             auto eolPos = descr.find(L'\n', pos);
             if(eolPos == std::string::npos)
-                eolPos = descr.size();
+                eolPos = descrSz;
             size_t words = 0;
             bool similar = false;
             const auto lineBeginPos = pos;
@@ -65,7 +48,7 @@ namespace wiktionary
                 {
                     if(interm)
                     {
-                        if(intermPos < term.size() &&
+                        if(intermPos < termSz &&
                             std::towlower(term[intermPos]) ==
                             std::towlower(descr[pos]))
                         {
@@ -99,11 +82,11 @@ namespace wiktionary
                 {
                     first = false;
                 }
-                result += descr.substr(
-                    lineBeginPos, eolPos-lineBeginPos);
+                result.append(std::begin(descr)+lineBeginPos,
+                    std::begin(descr)+eolPos);
             }
             pos = eolPos;
-            if(pos < descr.size())
+            if(pos < descrSz)
                 ++pos;
         }
         return result;
@@ -134,6 +117,23 @@ namespace wiktionary
             }
         }
         return result;
+    }
+
+    bool suitableTerm(const core::String &term)
+    {
+        return std::all_of(
+            std::begin(term), std::end(term),
+                [](core::String::value_type v){
+                    if(std::iswalpha(v))
+                    {
+                        const auto lv = std::towlower(v);
+                        return lv >= L'a' && lv <= L'z';
+                    }
+                    else
+                    {
+                        return false;
+                    }
+            });
     }
 }
 }
