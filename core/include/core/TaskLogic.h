@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <vector>
+#include <cstddef>
 
 #include "base/Nullable.h"
 #include "core/String.h"
@@ -28,6 +29,7 @@ namespace core
         bool validate(const String &result);
         void describe(IRender &render);
         String skip();
+        void hint(IRender &render);
 
         long long elapsedUs() const;
 
@@ -46,6 +48,7 @@ namespace core
         // TODO: put to stats, use last as current
         base::Nullable<Stats> current;
         StatsCol stats;
+        std::size_t hintLevel;
     };
 }
 

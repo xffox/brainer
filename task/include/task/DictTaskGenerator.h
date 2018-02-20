@@ -6,6 +6,7 @@
 #include <vector>
 #include <utility>
 #include <cstddef>
+#include <random>
 
 #include "core/ITaskGenerator.h"
 #include "core/String.h"
@@ -34,6 +35,8 @@ namespace task
     private:
         TaskCollection tasks;
         bool reversed;
+        std::seed_seq seedSeq;
+        std::minstd_rand random;
         IndexGenerator indexGenerator;
     };
 }

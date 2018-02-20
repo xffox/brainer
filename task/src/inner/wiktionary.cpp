@@ -24,46 +24,46 @@ namespace wiktionary
     core::String prepareDescription(const core::String &descr,
         const core::String &term)
     {
-        std::size_t pos = 0;
         core::String result;
         bool first = true;
-        const auto descrSz = descr.size();
-        const auto termSz = term.size();
-        while(pos < descrSz)
+        const auto descrEndIter = end(descr);
+        const auto termEndIter = end(term);
+        auto iter = begin(descr);
+        while(iter < descrEndIter)
         {
-            auto eolPos = descr.find(L'\n', pos);
-            if(eolPos == std::string::npos)
-                eolPos = descrSz;
             size_t words = 0;
             bool similar = false;
-            const auto lineBeginPos = pos;
-            while(pos < eolPos)
+            const auto lineBeginPos = iter;
+            while(iter < descrEndIter && *iter != L'\n')
             {
-                while(pos < eolPos && !std::iswalnum(descr[pos]))
-                    ++pos;
-                const auto wordBeginPos = pos;
+                while((iter < descrEndIter && *iter != L'\n') &&
+                    !std::iswalnum(*iter))
+                    ++iter;
+                const auto wordBeginPos = iter;
                 bool interm = true;
-                size_t intermPos = 0;
-                while(pos < eolPos && std::iswalnum(descr[pos]))
+                auto intermIter = begin(term);
+                while((iter < descrEndIter && *iter != L'\n') &&
+                    std::iswalnum(*iter))
                 {
                     if(interm)
                     {
-                        if(intermPos < termSz &&
-                            std::towlower(term[intermPos]) ==
-                            std::towlower(descr[pos]))
+                        if(intermIter < termEndIter &&
+                            std::towlower(*intermIter) ==
+                            std::towlower(*iter))
                         {
-                            ++intermPos;
+                            ++intermIter;
                         }
                         else
                         {
                             interm = false;
                         }
                     }
-                    ++pos;
+                    ++iter;
                 }
-                if(wordBeginPos < pos)
+                if(wordBeginPos < iter)
                 {
-                    if(static_cast<double>(intermPos)/(pos-wordBeginPos) >=
+                    if(static_cast<double>(
+                            intermIter-begin(term))/(iter-wordBeginPos) >=
                         DROP_SIMILARITY)
                     {
                         similar = true;
@@ -82,12 +82,12 @@ namespace wiktionary
                 {
                     first = false;
                 }
-                result.append(std::begin(descr)+lineBeginPos,
-                    std::begin(descr)+eolPos);
+                result.append(lineBeginPos, iter);
             }
-            pos = eolPos;
-            if(pos < descrSz)
-                ++pos;
+            while(iter < descrEndIter && *iter != L'\n')
+                ++iter;
+            if(iter < descrEndIter)
+                ++iter;
         }
         return result;
     }

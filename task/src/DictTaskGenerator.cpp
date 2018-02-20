@@ -32,7 +32,9 @@ namespace task
     DictTaskGenerator::DictTaskGenerator(unsigned int seed,
         const TaskCollection &tasks, bool reversed)
         :tasks(prepareTasks(tasks)), reversed(reversed),
-        indexGenerator(prepareIndices(this->tasks.size()), this->tasks.size()/2, seed)
+        seedSeq{seed}, random(seedSeq),
+        indexGenerator(prepareIndices(this->tasks.size()),
+            this->tasks.size()/2, random())
     {}
 
     DictTaskGenerator::~DictTaskGenerator()
@@ -49,10 +51,10 @@ namespace task
                 const auto &p = tasks[idx];
                 if(!reversed)
                     return std::unique_ptr<core::ITask>(
-                        new DictTask(p.first, p.second));
+                        new DictTask(p.first, p.second, random()));
                 else
                     return std::unique_ptr<core::ITask>(
-                        new DictTask(p.second, p.first));
+                        new DictTask(p.second, p.first, random()));
             }
             catch(const std::exception&)
             {

@@ -50,12 +50,14 @@ namespace bot
         virtual void processPlayCmd(const std::string &from, const StringList &args);
         virtual void processQuitCmd(const std::string &from, const StringList &args);
         virtual void processSkipCmd(const std::string &from, const StringList &args);
+        virtual void processHintCmd(const std::string &from, const StringList &args);
         virtual base::Nullable<Validity> processAnswer(const std::string &from, const std::string &answer);
 
         virtual void sendTaskList();
         virtual void sendNormHelp();
         virtual void sendPlayHelp();
         virtual void sendTask(core::TaskLogic &logic);
+        virtual void sendHint(core::TaskLogic &logic);
         virtual void sendInvalid(const std::string &from, const core::String &descr,
             const core::String &str);
         virtual void sendValid(const std::string &from, const core::String &descr,

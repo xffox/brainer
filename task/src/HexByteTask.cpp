@@ -43,4 +43,7 @@ namespace task
         std::bitset<8> s(value);
         render.addText(util::toWString(s.to_string()));
     }
+
+    void HexByteTask::hint(core::IRender&, std::size_t) const
+    {}
 }

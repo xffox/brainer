@@ -2,6 +2,7 @@
 #define TASK_WORDGENTASKGENERATOR_H
 
 #include <unordered_map>
+#include <random>
 
 #include "core/ITaskGenerator.h"
 #include "task/StringCollection.h"
@@ -23,6 +24,8 @@ namespace task
 
     private:
         LetterMap letters;
+        std::seed_seq seedSeq;
+        std::minstd_rand random;
         WordGen wordGen;
         WordGen::RandomEngine eng;
     };

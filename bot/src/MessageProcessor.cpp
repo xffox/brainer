@@ -74,6 +74,10 @@ namespace bot
         {
             processListCmd(from, command.args);
         }
+        else if(command.cmd == "hint")
+        {
+            processHintCmd(from, command.args);
+        }
         else
         {
             sendNormHelp();
@@ -169,6 +173,20 @@ namespace bot
         }
     }
 
+    void MessageProcessor::processHintCmd(const std::string&,
+        const StringList&)
+    {
+        if(taskLogic.get())
+        {
+            sendHint(*taskLogic);
+        }
+        else
+        {
+            send("no game is played now");
+            sendNormHelp();
+        }
+    }
+
     void MessageProcessor::send(const std::string &msg)
     {
         sender.send(msg);
@@ -208,6 +226,22 @@ namespace bot
         std::stringstream ss;
         ss<<"TASK:"<<std::endl;
         ss<<strutil::fromCoreString(render.text());
+        send(ss.str());
+    }
+
+    void MessageProcessor::sendHint(core::TaskLogic &logic)
+    {
+        StringRender render;
+        logic.hint(render);
+        std::stringstream ss;
+        if(!render.text().empty())
+        {
+            ss<<"HINT: "<<strutil::fromCoreString(render.text());
+        }
+        else
+        {
+            ss<<"no more hints";
+        }
         send(ss.str());
     }
 

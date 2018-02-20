@@ -12,11 +12,13 @@ namespace task
     class DictTask: public core::ITask
     {
     public:
-        DictTask(const StringCollection &keys, const StringCollection &values);
+        DictTask(const StringCollection &keys, const StringCollection &values,
+            int seed);
 
         virtual bool validate(const core::String &result) const;
         virtual core::String answer() const;
         virtual void describe(core::IRender &render) const;
+        virtual void hint(core::IRender &render, std::size_t level) const;
 
     private:
         using StringSet = std::unordered_set<core::String>;
@@ -25,6 +27,7 @@ namespace task
         StringCollection keys;
         StringCollection values;
         StringSet answers;
+        int seed;
     };
 }
 

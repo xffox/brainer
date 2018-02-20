@@ -24,4 +24,7 @@ namespace task
     {
         render.addText(value);
     }
+
+    void MultiLetterTask::hint(core::IRender&, std::size_t) const
+    {}
 }

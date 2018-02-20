@@ -14,6 +14,7 @@ namespace task
         virtual bool validate(const core::String &result) const override;
         virtual core::String answer() const override;
         virtual void describe(core::IRender &render) const override;
+        virtual void hint(core::IRender &render, std::size_t level) const;
 
     private:
         core::String key;

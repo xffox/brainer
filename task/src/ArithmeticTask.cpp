@@ -66,4 +66,7 @@ namespace task
         stream<<a<<operationString(operation)<<b;
         render.addText(stream.str());
     }
+
+    void ArithmeticTask::hint(core::IRender&, std::size_t) const
+    {}
 }

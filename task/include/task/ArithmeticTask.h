@@ -19,6 +19,7 @@ namespace task
         virtual bool validate(const core::String &result) const;
         virtual core::String answer() const;
         virtual void describe(core::IRender &render) const;
+        virtual void hint(core::IRender &render, std::size_t level) const;
 
     private:
         ArithmeticTask(int a, int b, Operation op);

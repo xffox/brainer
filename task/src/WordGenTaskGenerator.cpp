@@ -8,7 +8,9 @@ namespace task
 {
     WordGenTaskGenerator::WordGenTaskGenerator(unsigned int seed,
         const StringCollection &vocabulary, const LetterMap &letters)
-        :letters(letters), wordGen(vocabulary), eng(seed)
+        :letters(letters),
+        seedSeq{seed}, random(seedSeq),
+        wordGen(vocabulary), eng(random())
     {
     }
 
@@ -39,6 +41,7 @@ namespace task
             }
         }
         return std::unique_ptr<core::ITask>(
-            new DictTask(StringCollection{key}, StringCollection{word}));
+            new DictTask(StringCollection{key}, StringCollection{word},
+            random()));
     }
 }

@@ -1,6 +1,7 @@
 #include "core/TaskLogic.h"
 
 #include <cassert>
+#include <limits>
 
 #include "core/ITask.h"
 #include "core/ITaskGenerator.h"
@@ -13,7 +14,7 @@ namespace core
     TaskLogic::TaskLogic(std::unique_ptr<ITaskGenerator> taskGenerator)
         :stopwatch(new Stopwatch()),
         taskGenerator(std::move(taskGenerator)),
-        currentTask(), current(), stats()
+        currentTask(), current(), stats(), hintLevel(0)
     {
         generate();
     }
@@ -35,6 +36,7 @@ namespace core
         currentTask.reset(taskGenerator->generateTask().release());
         assert(currentTask.get());
         stopwatch->reset();
+        hintLevel = 0;
     }
 
     bool TaskLogic::validate(const String &result)
@@ -73,6 +75,16 @@ namespace core
         if(currentTask.get())
         {
             currentTask->describe(render);
+        }
+    }
+
+    void TaskLogic::hint(IRender &render)
+    {
+        if(currentTask.get())
+        {
+            currentTask->hint(render, hintLevel);
+            if(hintLevel < std::numeric_limits<decltype(hintLevel)>::max())
+                ++hintLevel;
         }
     }
 
