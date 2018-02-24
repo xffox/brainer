@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <iterator>
 #include <cwctype>
+#include <cmath>
+#include <cassert>
 
 #include "csv/csv.h"
 
@@ -19,56 +21,61 @@ namespace wiktionary
         constexpr std::size_t COLUMNS = 2;
         constexpr double DROP_SIMILARITY = 0.7;
         constexpr std::size_t MIN_WORDS = 3;
+        constexpr std::size_t MIN_LINES = 2;
     }
 
     core::String prepareDescription(const core::String &descr,
         const core::String &term)
     {
         core::String result;
+        core::String lowerTerm;
+        std::transform(std::begin(term), std::end(term),
+            std::back_inserter(lowerTerm),
+            [](core::String::value_type v){
+                return std::towlower(v);
+            });
         bool first = true;
         const auto descrEndIter = end(descr);
-        const auto termEndIter = end(term);
+        const std::size_t dropLength = term.size()*DROP_SIMILARITY+1;
+        assert(dropLength <= term.size());
         auto iter = begin(descr);
+        std::size_t lines = 0;
         while(iter < descrEndIter)
         {
             size_t words = 0;
             bool similar = false;
             const auto lineBeginPos = iter;
-            while(iter < descrEndIter && *iter != L'\n')
+            const auto lineEndPos = std::find(iter, descrEndIter, L'\n');
+            while(iter < lineEndPos)
             {
-                while((iter < descrEndIter && *iter != L'\n') &&
-                    !std::iswalnum(*iter))
-                    ++iter;
-                const auto wordBeginPos = iter;
-                bool interm = true;
-                auto intermIter = begin(term);
-                while((iter < descrEndIter && *iter != L'\n') &&
-                    std::iswalnum(*iter))
+                const auto wordBeginPos = std::find_if(iter, lineEndPos,
+                    [](core::String::value_type v){
+                        return std::iswalnum(v);
+                    });
+                iter = wordBeginPos;
+                auto intermIter = begin(lowerTerm);
+                const auto termDropIter = intermIter +
+                    std::min(static_cast<std::size_t>(lineEndPos-iter),
+                        dropLength);
+                while(intermIter < termDropIter &&
+                    std::iswalnum(*iter) &&
+                    static_cast<wint_t>(*intermIter) == std::towlower(*iter))
                 {
-                    if(interm)
-                    {
-                        if(intermIter < termEndIter &&
-                            std::towlower(*intermIter) ==
-                            std::towlower(*iter))
-                        {
-                            ++intermIter;
-                        }
-                        else
-                        {
-                            interm = false;
-                        }
-                    }
+                    ++intermIter;
                     ++iter;
                 }
+                if(static_cast<std::size_t>(intermIter-begin(lowerTerm)) ==
+                    dropLength)
+                {
+                    similar = true;
+                    break;
+                }
+                iter = std::find_if(iter, lineEndPos,
+                    [](core::String::value_type v){
+                        return !std::iswalnum(v);
+                    });
                 if(wordBeginPos < iter)
                 {
-                    if(static_cast<double>(
-                            intermIter-begin(term))/(iter-wordBeginPos) >=
-                        DROP_SIMILARITY)
-                    {
-                        similar = true;
-                        break;
-                    }
                     ++words;
                 }
             }
@@ -82,14 +89,16 @@ namespace wiktionary
                 {
                     first = false;
                 }
-                result.append(lineBeginPos, iter);
+                result.append(lineBeginPos, lineEndPos);
+                ++lines;
             }
-            while(iter < descrEndIter && *iter != L'\n')
-                ++iter;
+            iter = lineEndPos;
             if(iter < descrEndIter)
                 ++iter;
         }
-        return result;
+        if(lines >= MIN_LINES)
+            return result;
+        return core::String();
     }
 
     TaskCollection readWiktionaryDefinitions(std::wistream &stream)

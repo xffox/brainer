@@ -40,7 +40,7 @@ namespace task
                 core::String(L",")));
     }
 
-    void DictTask::hint(core::IRender &render, std::size_t level) const
+    void DictTask::hint(core::IRender &render, std::size_t) const
     {
         using IdxCollection = std::vector<std::size_t>;
         std::seed_seq seedSeq({seed});
@@ -48,26 +48,24 @@ namespace task
         if(!keys.empty())
         {
             const auto &key = keys.front();
-            if(level <= key.size()/2)
+            const auto level = key.size()/2;
+            IdxCollection indices;
+            for(std::size_t i = 0; i < key.size(); ++i)
             {
-                IdxCollection indices;
-                for(std::size_t i = 0; i < key.size(); ++i)
-                {
-                    indices.push_back(i);
-                }
-                core::String result(key.size(), '*');
-                for(std::size_t i = 0; i < level; ++i)
-                {
-                    const auto swapIdx =
-                        std::uniform_int_distribution<std::size_t>(
-                            i, key.size()-1)(random);
-                    result[indices[swapIdx]] = key[indices[swapIdx]];
-                    const auto t = indices[i];
-                    indices[i] = indices[swapIdx];
-                    indices[swapIdx] = t;
-                }
-                render.addText(result);
+                indices.push_back(i);
             }
+            core::String result(key.size(), '*');
+            for(std::size_t i = 0; i < level; ++i)
+            {
+                const auto swapIdx =
+                    std::uniform_int_distribution<std::size_t>(
+                        i, key.size()-1)(random);
+                result[indices[swapIdx]] = key[indices[swapIdx]];
+                const auto t = indices[i];
+                indices[i] = indices[swapIdx];
+                indices[swapIdx] = t;
+            }
+            render.addText(result);
         }
     }
 }
