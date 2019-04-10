@@ -7,21 +7,30 @@
 #include <gloox/jid.h>
 #include <gloox/client.h>
 #include <gloox/jid.h>
+#include <gloox/gloox.h>
 
 #include "xlog/xlog.h"
 
 #include "ConnectionHandler.h"
+#include "LogHandler.h"
 
 namespace bot
 {
     Bot::Bot(const std::string &tasksFile,
         const std::string &jid, const std::string &password,
-        const std::string &resource, const std::string &room)
+        const std::string &resource, const std::string &room,
+        const std::string &host)
         :cont(true), taskProvider(new task::TaskProvider(tasksFile)),
         client(new gloox::Client(gloox::JID(jid), password)),
-        connectionHandler(new ConnectionHandler(*client, *taskProvider, room))
+        connectionHandler(new ConnectionHandler(*client, *taskProvider, room)),
+        logHandler(new LogHandler())
     {
+        if(!host.empty())
+            client->setServer(host);
         client->setResource(resource);
+        client->logInstance().registerLogHandler(
+            gloox::LogLevel::LogLevelWarning, gloox::LogArea::LogAreaAll,
+            logHandler.get());
     }
 
     Bot::~Bot()

@@ -11,13 +11,15 @@
 namespace bot
 {
     class ConnectionHandler;
+    class LogHandler;
 
     class Bot
     {
     public:
         Bot(const std::string &tasksFile,
             const std::string &jid, const std::string &password,
-            const std::string &resources = "", const std::string &room = "");
+            const std::string &resources = "", const std::string &room = "",
+            const std::string &host = "");
         ~Bot();
 
         void run();
@@ -27,6 +29,7 @@ namespace bot
         std::unique_ptr<task::TaskProvider> taskProvider;
         std::unique_ptr<gloox::Client> client;
         std::unique_ptr<ConnectionHandler> connectionHandler;
+        std::unique_ptr<LogHandler> logHandler;
     };
 }
 

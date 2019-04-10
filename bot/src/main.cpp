@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <iterator>
 #include <locale>
 #include <codecvt>
 
@@ -24,6 +25,7 @@ namespace
         std::string resource;
         std::string room;
         std::string tasksFile;
+        std::string host;
     };
 
     Config readConfig(const std::string &filename)
@@ -70,6 +72,11 @@ namespace
             if(roomIter != conf.end())
                 result.room = convert.to_bytes(roomIter->second);
         }
+        {
+            auto hostIter = conf.find(L"host");
+            if(hostIter != std::end(conf))
+                result.host = convert.to_bytes(hostIter->second);
+        }
         return result;
     }
 }
@@ -80,7 +87,7 @@ int main()
     {
         const auto config = readConfig("brainer_bot.conf");
         bot::Bot bot(config.tasksFile, config.jid, config.password,
-            config.resource, config.room);
+            config.resource, config.room, config.host);
         auto term = [&bot](){bot.kill();};
         try
         {
