@@ -1,6 +1,7 @@
 #ifndef CSV_CSV_H
 #define CSV_CSV_H
 
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <istream>
@@ -20,38 +21,59 @@ namespace csv
         using StringCollection = std::vector<String>;
 
     public:
-        Csv(std::basic_istream<CharT> &stream, CharT delim=',', CharT bracket='"', CharT esc='\\')
-            :stream(stream), delim(delim), bracket(bracket), esc(esc), lineNumber(0),
-            buffer{}, bufferPos(0), bufferSize(0)
+        Csv(std::basic_istream<CharT> &stream,
+            CharT delim=',', CharT bracket='"', CharT esc='\\')
+            :stream(stream), delim(delim), bracket(bracket), esc(esc),
+            quoteSpecialChars(makeQuoteSpecialChars(delim, bracket)),
+            lineNumber(0), buffer{},
+            bufferPos(0), bufferSize(0), expectedColumns(1),
+            rowOp(esc != L'\0'?&Csv::rowWithEsc:&Csv::rowQuote)
         {}
 
         std::pair<StringCollection, bool> row();
 
     private:
-        using CharBuffer = std::array<CharT, 1024>;
+        enum class PrevCategory
+        {
+            REG,
+            BRACE,
+            CR
+        };
+        using CharBuffer = std::array<CharT, 4096>;
+        using CharFlagCol = std::array<bool, 128>;
 
     private:
         std::pair<StringCollection, bool> rowWithEsc();
         std::pair<StringCollection, bool> rowQuote();
 
+        static CharFlagCol makeQuoteSpecialChars(CharT delim, CharT bracket)
+        {
+            CharFlagCol res{};
+            res[delim] = true;
+            res[bracket] = true;
+            res['\r'] = true;
+            res['\n'] = true;
+            return res;
+        }
+
     private:
         std::basic_istream<CharT> &stream;
-        CharT delim;
-        CharT bracket;
-        CharT esc;
+        const CharT delim;
+        const CharT bracket;
+        const CharT esc;
+        const CharFlagCol quoteSpecialChars;
         std::size_t lineNumber;
         CharBuffer buffer;
         std::size_t bufferPos;
         std::size_t bufferSize;
+        std::size_t expectedColumns;
+        std::pair<typename Csv::StringCollection, bool> (Csv::*const rowOp)();
     };
 
     template<class CharT>
     std::pair<typename Csv<CharT>::StringCollection, bool> Csv<CharT>::row()
     {
-        if(esc != L'\0')
-            return Csv<CharT>::rowWithEsc();
-        else
-            return Csv<CharT>::rowQuote();
+        return (this->*rowOp)();
     }
 
     template<class CharT>
@@ -79,7 +101,7 @@ namespace csv
                     stream.read(&buffer.front(), buffer.size());
                     bufferSize = stream.gcount();
                     bufferPos = 0;
-                    if(bufferSize == 0)
+                    if(bufferPos == bufferSize)
                         break;
                 }
                 else
@@ -168,7 +190,7 @@ namespace csv
                 {
                     if(!escaped)
                     {
-                        res.first.push_back(cur);
+                        res.first.push_back(std::move(cur));
                         cur.clear();
                         closed = false;
                     }
@@ -254,7 +276,9 @@ namespace csv
                 else
                 {
                     // unknown escapes
+                    cur.push_back(esc);
                     cur.push_back(v);
+                    escaped = false;
                 }
             }
             ++i;
@@ -262,7 +286,8 @@ namespace csv
         }
         if(!res.first.empty() || !cur.empty())
         {
-            res.first.push_back(cur);
+            res.first.push_back(std::move(cur));
+            cur.clear();
             res.second = true;
         }
         return res;
@@ -272,23 +297,21 @@ namespace csv
     std::pair<typename Csv<CharT>::StringCollection, bool>
     Csv<CharT>::rowQuote()
     {
-        std::pair<StringCollection, bool> res{StringCollection(), false};
-        ++lineNumber;
-        String cur;
-        bool quoted = false;
-        enum class PrevCategory
+        struct RowQuoteState
         {
-            REG,
-            BRACE,
-            CR
+            bool quoted = false;
+            bool eol = false;
+            std::size_t i = 1;
+            PrevCategory prev = PrevCategory::REG;
         };
-        if(!stream && bufferPos == bufferSize)
-            return res;
-        bool eol = false;
-        std::size_t i = 1;
-        PrevCategory prev = PrevCategory::REG;
-        while(!eol)
+        std::pair<StringCollection, bool> res{
+            StringCollection(expectedColumns), false};
+        ++lineNumber;
+        RowQuoteState state;
+        std::size_t column = 0;
+        while(!state.eol)
         {
+            auto &curValue = res.first[column];
             if(bufferPos == bufferSize)
             {
                 if(stream)
@@ -296,7 +319,7 @@ namespace csv
                     stream.read(&buffer.front(), buffer.size());
                     bufferSize = stream.gcount();
                     bufferPos = 0;
-                    if(bufferSize == 0)
+                    if(bufferPos == bufferSize)
                         break;
                 }
                 else
@@ -304,143 +327,160 @@ namespace csv
                     break;
                 }
             }
-            const auto v = buffer[bufferPos];
-            if(v == '\n')
+            res.second = true;
+            if(state.prev == PrevCategory::REG)
             {
-                if(!quoted)
+                auto iter = std::find_if(
+                    std::begin(buffer)+bufferPos, std::begin(buffer)+bufferSize,
+                    [this](CharT v){
+                        return quoteSpecialChars[v%quoteSpecialChars.size()];
+                    });
+                curValue.append(std::begin(buffer)+bufferPos, iter);
+                bufferPos = iter - std::begin(buffer);
+            }
+            if(bufferPos == bufferSize)
+                continue;
+            const auto v = buffer[bufferPos];
+            if(v == delim)
+            {
+                if(!state.quoted)
                 {
-                    if(prev == PrevCategory::BRACE)
+                    if(state.prev == PrevCategory::BRACE)
                     {
-                        if(cur.empty())
+                        if(curValue.empty())
                         {
-                            cur.push_back(v);
-                            quoted = true;
+                            curValue.push_back(v);
+                            state.quoted = true;
                         }
                         else
                         {
                             std::stringstream ss;
                             ss<<"csv parse error for line: "<<
                                 "value before bracket is not empty: "
-                                <<lineNumber<<':'<<i<<'='<<v;
+                                <<lineNumber<<':'<<state.i<<'='<<v;
+                            throw std::runtime_error(ss.str());
+                        }
+                    }
+                    else if(state.prev == PrevCategory::CR)
+                    {
+                        state.eol = true;
+                        break;
+                    }
+                    else
+                    {
+                        ++column;
+                        if(column >= res.first.size())
+                        {
+                            res.first.emplace_back();
+                        }
+                    }
+                }
+                else
+                {
+                    if(state.prev == PrevCategory::BRACE)
+                    {
+                        state.quoted = false;
+                        ++column;
+                        if(column >= res.first.size())
+                        {
+                            res.first.emplace_back();
+                        }
+                    }
+                    else
+                    {
+                        curValue.push_back(v);
+                    }
+                }
+                state.prev = PrevCategory::REG;
+            }
+            else if(v == '\n')
+            {
+                if(!state.quoted)
+                {
+                    if(state.prev == PrevCategory::BRACE)
+                    {
+                        if(res.first.empty())
+                        {
+                            curValue.push_back(v);
+                            state.quoted = true;
+                        }
+                        else
+                        {
+                            std::stringstream ss;
+                            ss<<"csv parse error for line: "<<
+                                "value before bracket is not empty: "
+                                <<lineNumber<<':'<<state.i<<'='<<v;
                             throw std::runtime_error(ss.str());
                         }
                     }
                     else
                     {
-                        eol = true;
+                        state.eol = true;
                     }
                 }
                 else
                 {
-                    if(prev == PrevCategory::BRACE)
+                    if(state.prev == PrevCategory::BRACE)
                     {
-                        quoted = false;
-                        eol = true;
+                        state.quoted = false;
+                        state.eol = true;
                     }
                     else
                     {
-                        cur.push_back(v);
+                        curValue.push_back(v);
                     }
                 }
-                prev = PrevCategory::REG;
+                state.prev = PrevCategory::REG;
             }
             else if(v == '\r')
             {
-                if(!quoted)
+                if(!state.quoted)
                 {
-                    if(prev == PrevCategory::BRACE)
+                    if(state.prev == PrevCategory::BRACE)
                     {
-                        if(cur.empty())
+                        if(curValue.empty())
                         {
-                            cur.push_back(v);
-                            quoted = true;
+                            curValue.push_back(v);
+                            state.quoted = true;
                         }
                         else
                         {
                             std::stringstream ss;
                             ss<<"csv parse error for line: "<<
                                 "value before bracket is not empty: "
-                                <<lineNumber<<':'<<i<<'='<<v;
+                                <<lineNumber<<':'<<state.i<<'='<<v;
                             throw std::runtime_error(ss.str());
                         }
                     }
-                    else if(prev == PrevCategory::CR)
+                    else if(state.prev == PrevCategory::CR)
                     {
-                        eol = true;
+                        state.eol = true;
                         break;
                     }
                 }
                 else
                 {
-                    if(prev == PrevCategory::BRACE)
+                    if(state.prev == PrevCategory::BRACE)
                     {
-                        quoted = false;
+                        state.quoted = false;
                     }
                     else
                     {
-                        cur.push_back(v);
+                        curValue.push_back(v);
                     }
                 }
-                prev = PrevCategory::CR;
-            }
-            else if(v == delim)
-            {
-                if(!quoted)
-                {
-                    if(prev == PrevCategory::BRACE)
-                    {
-                        if(cur.empty())
-                        {
-                            cur.push_back(v);
-                            quoted = true;
-                        }
-                        else
-                        {
-                            std::stringstream ss;
-                            ss<<"csv parse error for line: "<<
-                                "value before bracket is not empty: "
-                                <<lineNumber<<':'<<i<<'='<<v;
-                            throw std::runtime_error(ss.str());
-                        }
-                    }
-                    else if(prev == PrevCategory::CR)
-                    {
-                        eol = true;
-                        break;
-                    }
-                    else
-                    {
-                        // TODO: move
-                        res.first.push_back(cur);
-                        cur.clear();
-                    }
-                }
-                else
-                {
-                    if(prev == PrevCategory::BRACE)
-                    {
-                        quoted = false;
-                        // TODO: move
-                        res.first.push_back(cur);
-                        cur.clear();
-                    }
-                    else
-                    {
-                        cur.push_back(v);
-                    }
-                }
-                prev = PrevCategory::REG;
+                state.prev = PrevCategory::CR;
             }
             else if(v == bracket)
             {
                 auto nextPrev = PrevCategory::BRACE;
-                if(!quoted)
+                if(!state.quoted)
                 {
-                    if(prev == PrevCategory::BRACE)
+                    if(state.prev == PrevCategory::BRACE)
                     {
-                        if(cur.empty())
+                        if(curValue.empty())
                         {
-                            quoted = true;
+                            state.quoted = true;
                             nextPrev = PrevCategory::BRACE;
                         }
                         else
@@ -448,13 +488,13 @@ namespace csv
                             std::stringstream ss;
                             ss<<"csv parse error for line: "<<
                                 "value before bracket is not empty: "
-                                <<lineNumber<<':'<<i<<'='<<v;
+                                <<lineNumber<<':'<<state.i<<'='<<v;
                             throw std::runtime_error(ss.str());
                         }
                     }
-                    else if(prev == PrevCategory::CR)
+                    else if(state.prev == PrevCategory::CR)
                     {
-                        eol = true;
+                        state.eol = true;
                         nextPrev = PrevCategory::REG;
                         break;
                     }
@@ -465,9 +505,9 @@ namespace csv
                 }
                 else
                 {
-                    if(prev == PrevCategory::BRACE)
+                    if(state.prev == PrevCategory::BRACE)
                     {
-                        cur.push_back(v);
+                        curValue.push_back(v);
                         nextPrev = PrevCategory::REG;
                     }
                     else
@@ -475,59 +515,60 @@ namespace csv
                         nextPrev = PrevCategory::BRACE;
                     }
                 }
-                prev = nextPrev;
+                state.prev = nextPrev;
             }
             else
             {
-                if(!quoted)
+                if(!state.quoted)
                 {
-                    if(prev == PrevCategory::BRACE)
+                    if(state.prev == PrevCategory::BRACE)
                     {
-                        if(cur.empty())
+                        if(curValue.empty())
                         {
-                            cur.push_back(v);
-                            quoted = true;
+                            curValue.push_back(v);
+                            state.quoted = true;
                         }
                         else
                         {
                             std::stringstream ss;
                             ss<<"csv parse error for line: "<<
                                 "value before bracket is not empty: "
-                                <<lineNumber<<':'<<i<<'='<<v;
+                                <<lineNumber<<':'<<state.i<<'='<<v;
                             throw std::runtime_error(ss.str());
                         }
                     }
-                    else if(prev == PrevCategory::CR)
+                    else if(state.prev == PrevCategory::CR)
                     {
-                        eol = true;
+                        state.eol = true;
                         break;
                     }
                     else
                     {
-                        cur.push_back(v);
+                        curValue.push_back(v);
                     }
                 }
                 else
                 {
-                    if(prev == PrevCategory::BRACE)
+                    if(state.prev == PrevCategory::BRACE)
                     {
                         throw std::runtime_error("");
                     }
                     else
                     {
-                        cur.push_back(v);
+                        curValue.push_back(v);
                     }
                 }
-                prev = PrevCategory::REG;
+                state.prev = PrevCategory::REG;
             }
-            ++i;
+            ++state.i;
             ++bufferPos;
         }
-        if(!res.first.empty() || !cur.empty())
+        const auto curColumns = column+1;
+        if(curColumns < res.first.size())
         {
-            res.first.push_back(cur);
-            res.second = true;
+            res.first.resize(curColumns);
         }
+        expectedColumns = curColumns;
         return res;
     }
 }
