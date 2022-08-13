@@ -4,21 +4,21 @@
 #include <string>
 #include <unordered_set>
 
-#include "core/ITask.h"
+#include "task/BaseTask.h"
 #include "task/StringCollection.h"
 
 namespace task
 {
-    class DictTask: public core::ITask
+    class DictTask: public BaseTask
     {
     public:
         DictTask(const StringCollection &keys, const StringCollection &values,
             int seed);
 
-        virtual bool validate(const core::String &result) const;
-        virtual core::String answer() const;
-        virtual void describe(core::IRender &render) const;
-        virtual void hint(core::IRender &render, std::size_t level) const;
+        bool validateBase(const core::String &result) override;
+        core::String answer() const override;
+        void describe(core::IRender &render) const override;
+        void hint(core::IRender &render, std::size_t level) const override;
 
     private:
         using StringSet = std::unordered_set<core::String>;

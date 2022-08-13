@@ -1,11 +1,11 @@
 #ifndef TASK_MULTIPLICATIONTASK_H
 #define TASK_MULTIPLICATIONTASK_H
 
-#include "core/ITask.h"
+#include "task/BaseTask.h"
 
 namespace task
 {
-    class ArithmeticTask: public core::ITask
+    class ArithmeticTask: public BaseTask
     {
         friend class ArithmeticTaskGenerator;
     public:
@@ -16,14 +16,14 @@ namespace task
         };
 
     public:
-        virtual bool validate(const core::String &result) const;
-        virtual core::String answer() const;
-        virtual void describe(core::IRender &render) const;
-        virtual void hint(core::IRender &render, std::size_t level) const;
+        bool validateBase(const core::String &result) override;
+        core::String answer() const override;
+        void describe(core::IRender &render) const override;
+        void hint(core::IRender &render, std::size_t level) const override;
 
     private:
         ArithmeticTask(int a, int b, Operation op);
-        
+
     private:
         int a;
         int b;

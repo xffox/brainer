@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.0)
 
 project(brainer)
 
@@ -15,12 +15,11 @@ set(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/lib")
 set(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 
 if(UNIX)
-    add_definitions("-Wall -Wextra -pedantic -Wno-long-long -std=c++11")
+    add_definitions("-Wall -Wextra -Weffc++ -pedantic -std=c++17")
 endif()
 
 add_subdirectory(base)
 add_subdirectory(xlog/xlog)
-add_subdirectory(serialization/variant)
 add_subdirectory(csv)
 add_subdirectory(core)
 add_subdirectory(task)

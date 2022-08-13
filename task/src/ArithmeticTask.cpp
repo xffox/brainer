@@ -46,7 +46,7 @@ namespace task
             :a(a), b(b), result(run(a, b, operation)), operation(operation)
         {}
 
-    bool ArithmeticTask::validate(const core::String &result) const
+    bool ArithmeticTask::validateBase(const core::String &result)
     {
         int value = 0;
         std::string regStr;

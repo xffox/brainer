@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.0)
 
 set(TASK_NAME task)
 
@@ -19,5 +19,6 @@ include_directories(${TASK_INCLUDES})
 file(GLOB TASK_SRCS "src/*.cpp" "src/*/*.cpp")
 
 add_library(${TASK_NAME} ${TASK_SRCS})
+target_link_libraries(${TASK_NAME})
 
 add_subdirectory(test)

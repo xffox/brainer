@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <cstddef>
+#include <optional>
 
 #include "base/Nullable.h"
 #include "core/String.h"
@@ -22,11 +23,23 @@ namespace core
     public:
         using StatsCol = std::vector<Stats>;
 
+        struct Validity
+        {
+            bool valid;
+            std::optional<String> description;
+        };
+
+        struct ValidationResult
+        {
+            Validity validity;
+            std::optional<String> answer;
+        };
+
     public:
-        TaskLogic(std::unique_ptr<ITaskGenerator> taskGenerator);
+        explicit TaskLogic(std::unique_ptr<ITaskGenerator> taskGenerator);
         ~TaskLogic();
 
-        bool validate(const String &result);
+        ValidationResult validate(const String &result);
         void describe(IRender &render);
         String skip();
         void hint(IRender &render);

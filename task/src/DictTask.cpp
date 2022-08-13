@@ -1,10 +1,12 @@
 #include "task/DictTask.h"
 
+#include <algorithm>
 #include <sstream>
 #include <iterator>
 #include <stdexcept>
 #include <random>
 #include <vector>
+#include <cwctype>
 
 #include "base/strutil.h"
 #include "core/IRender.h"
@@ -13,19 +15,39 @@
 
 namespace task
 {
+    namespace
+    {
+        auto keepAlnum(const core::String &str)
+        {
+            core::String result;
+            std::copy_if(std::begin(str), std::end(str),
+                std::back_inserter(result),
+                [](auto c){
+                    return !(std::iswpunct(c) || std::iswblank(c));
+                });
+            return result;
+        }
+
+        auto normalizeWord(const core::String &str)
+        {
+            return util::tolower(keepAlnum(str));
+        }
+    }
+
     DictTask::DictTask(const StringCollection &keys,
         const StringCollection &values, int seed)
         :keys(keys), values(values), answers(), seed(seed)
     {
         if(values.empty() || keys.empty())
             throw std::runtime_error("task values or keys are empty");
-        util::toLowerCollection(keys.begin(), keys.end(),
-            std::inserter(answers, answers.begin()));
+        std::transform(keys.begin(), keys.end(),
+            std::inserter(answers, answers.begin()),
+            normalizeWord);
     }
 
-    bool DictTask::validate(const core::String &result) const
+    bool DictTask::validateBase(const core::String &result)
     {
-        return answers.find(util::tolower(result)) != answers.end();
+        return answers.find(normalizeWord(result)) != answers.end();
     }
 
     core::String DictTask::answer() const

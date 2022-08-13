@@ -12,7 +12,7 @@
 
 namespace task
 {
-    bool HexByteTask::validate(const core::String &result) const
+    bool HexByteTask::validateBase(const core::String &result)
     {
         std::string regStr;
         if(!util::toRegularStr(regStr, result))

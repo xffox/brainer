@@ -10,7 +10,7 @@ namespace task
         :key(std::move(key)), value(std::move(value))
     {}
 
-    bool MultiLetterTask::validate(const core::String &result) const
+    bool MultiLetterTask::validateBase(const core::String &result)
     {
         return result == key;
     }

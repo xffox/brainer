@@ -1,21 +1,21 @@
 #ifndef TASK_HEXBYTETASK_H
 #define TASK_HEXBYTETASK_H
 
-#include "core/ITask.h"
+#include "task/BaseTask.h"
 
 namespace task
 {
-    class HexByteTask: public core::ITask
+    class HexByteTask: public BaseTask
     {
         friend class HexByteTaskGenerator;
     public:
-        virtual bool validate(const core::String &result) const;
-        virtual core::String answer() const;
-        virtual void describe(core::IRender &render) const;
-        virtual void hint(core::IRender &render, std::size_t level) const;
+        bool validateBase(const core::String &result) override;
+        core::String answer() const override;
+        void describe(core::IRender &render) const override;
+        void hint(core::IRender &render, std::size_t level) const override;
 
     private:
-        HexByteTask(unsigned char value)
+        explicit HexByteTask(unsigned char value)
             :value(value)
         {}
 

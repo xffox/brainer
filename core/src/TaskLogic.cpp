@@ -39,26 +39,30 @@ namespace core
         hintLevel = 0;
     }
 
-    bool TaskLogic::validate(const String &result)
+    TaskLogic::ValidationResult TaskLogic::validate(const String &result)
     {
         if(currentTask.get())
         {
-            const bool res = currentTask->validate(result);
+            const auto res = currentTask->validate(result);
+            const auto done = currentTask->done();
+            std::optional<String> answer;
             if(!current.isNull())
-                current->answered = res;
-            if(res)
             {
+                current->answered = res.valid;
+                if(!res.valid)
+                {
+                    current->tries += 1;
+                }
+            }
+            if(done)
+            {
+                answer = currentTask->answer();
                 generate();
             }
-            else
-            {
-                if(!current.isNull())
-                    current->tries += 1;
-            }
-            return res;
+            return {{res.valid, res.description}, answer};
         }
         // TODO: or throw exception
-        return false;
+        return {{false, {}}, String()};
     }
 
     String TaskLogic::skip()

@@ -1,5 +1,7 @@
 #include "base/strutil.h"
 
+#include <limits>
+
 namespace base
 {
     namespace strutil
