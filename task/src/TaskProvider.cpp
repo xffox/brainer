@@ -18,6 +18,7 @@
 #include "task/MultiLetterTaskGenerator.h"
 #include "task/StringCollection.h"
 #include "task/tagaini.h"
+#include "task/MastermindTaskGenerator.h"
 #include "task/StringSet.h"
 #include "csv/csv.h"
 #include "base/strutil.h"
@@ -238,7 +239,10 @@ namespace task
                     return std::unique_ptr<core::ITaskGenerator>(
                         new DictTaskGenerator(genSeed(random),
                             inner::wiktionary::readWiktionaryDefinitions(stream)));
-                })
+                }),
+            std::make_pair("mastermind", [this](const StringCol&) {
+                    return std::make_unique<MastermindTaskGenerator>();
+                }),
         }
     {}
 
