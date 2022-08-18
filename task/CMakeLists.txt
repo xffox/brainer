@@ -1,24 +1,14 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(TASK_NAME task)
+set(TASK_LIB task)
+set(TASK_LIB ${TASK_LIB} PARENT_SCOPE)
 
-set(TASK_INCLUDES
-    "${CMAKE_CURRENT_SOURCE_DIR}/include"
-    ${CORE_INCLUDES}
-    ${CSV_INCLUDES}
-    ${FACT_INCLUDES}
-    )
-set(TASK_INCLUDES ${TASK_INCLUDES} PARENT_SCOPE)
-
-set(TASK_LIBS ${TASK_NAME} ${CORE_LIBS} ${FACT_LIBS})
-set(TASK_LIBS ${TASK_LIBS} PARENT_SCOPE)
-set(TASK_LIB ${TASK_NAME})
-
-include_directories(${TASK_INCLUDES})
+set(TASK_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CSV_INCLUDES}")
 
 file(GLOB TASK_SRCS "src/*.cpp" "src/*/*.cpp")
 
-add_library(${TASK_NAME} ${TASK_SRCS})
-target_link_libraries(${TASK_NAME})
+add_library(${TASK_LIB} ${TASK_SRCS})
+target_include_directories(${TASK_LIB} PUBLIC "${TASK_INCLUDES}")
+target_link_libraries(${TASK_LIB} ${CORE_LIB})
 
 add_subdirectory(test)

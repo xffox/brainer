@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <optional>
 
 #include "base/Nullable.h"
 #include "core/String.h"
@@ -41,6 +42,13 @@ namespace bot
             VALID
         };
 
+        struct AnswerResult
+        {
+            bool valid;
+            std::optional<core::String> validityDescription;
+            std::optional<core::String> answer;
+        };
+
     protected:
         virtual void processCommand(const std::string &from, const Command &command);
         virtual void processMessage(const std::string &from, const std::string &message);
@@ -58,16 +66,18 @@ namespace bot
         virtual void sendPlayHelp();
         virtual void sendTask(core::TaskLogic &logic);
         virtual void sendHint(core::TaskLogic &logic);
-        virtual void sendInvalid(const std::string &from, const core::String &descr,
-            const core::String &str);
-        virtual void sendValid(const std::string &from, const core::String &descr,
-            const core::String &str, const core::TaskLogic::StatsCol &stats);
+        virtual void sendInvalid(const std::string &from,
+            const std::optional<core::String> &descr,
+            const core::String &answer);
+        virtual void sendValid(const std::string &from,
+            const std::optional<core::String> &descr,
+            const core::String &answer, const core::TaskLogic::StatsCol &stats);
         virtual void sendAnswer(const core::String &str);
         virtual void sendStats(const core::TaskLogic::StatsCol &stats);
 
         core::TaskLogic *getTaskLogic() const;
         bool play(const std::string &name);
-        bool answerTask(const core::String &answer);
+        AnswerResult answerTask(const core::String &answer);
         void quit();
         core::String skip();
 

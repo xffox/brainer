@@ -7,6 +7,9 @@ include(CTest)
 set(CPACK_GENERATOR "TGZ")
 include(CPack)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 if(CMAKE_BUILD_TYPE STREQUAL "debug")
     add_definitions(-DDEBUG)
 endif()
@@ -15,11 +18,10 @@ set(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/lib")
 set(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 
 if(UNIX)
-    add_definitions("-Wall -Wextra -Weffc++ -pedantic -std=c++17")
+    add_definitions("-Wall -Wextra -Weffc++ -pedantic")
 endif()
 
 add_subdirectory(base)
-add_subdirectory(xlog/xlog)
 add_subdirectory(csv)
 add_subdirectory(core)
 add_subdirectory(task)

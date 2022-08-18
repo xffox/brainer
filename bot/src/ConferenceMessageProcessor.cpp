@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <iterator>
 #include <set>
+#include <utility>
 
 #include "strutil.h"
 
@@ -38,20 +39,26 @@ namespace bot
         scores.clear();
     }
 
-    void ConferenceMessageProcessor::sendInvalid(const std::string &from, const core::String &descr,
-        const core::String &str)
+    void ConferenceMessageProcessor::sendInvalid(const std::string &from, const std::optional<core::String> &descr,
+        const core::String &answer)
     {
-        send(strutil::fromCoreString(strutil::toCoreString(from) + L", WRONG: " + descr + L" isn't " +  str));
+        std::wstringstream stream;
+        stream<<strutil::toCoreString(from)<<", WRONG: "<<answer;
+        if(descr)
+        {
+            stream<<" - "<<*descr;
+        }
+        send(strutil::fromCoreString(std::move(stream).str()));
     }
 
-    void ConferenceMessageProcessor::sendValid(const std::string &from, const core::String &descr,
-        const core::String &str, const core::TaskLogic::StatsCol &stats)
+    void ConferenceMessageProcessor::sendValid(const std::string &from, const std::optional<core::String>&,
+        const core::String &answer, const core::TaskLogic::StatsCol &stats)
     {
         std::wstringstream stream;
         if(stats.empty())
             throw std::runtime_error("stats list is empty on valid result");
         const auto elapsedUs = stats.back().timeUs;
-        stream<<strutil::toCoreString(from)<<L", RIGHT: "<<descr<<L" is "<<str
+        stream<<strutil::toCoreString(from)<<L", RIGHT: "<<answer
             <<" ("<<std::setprecision(2)<<std::fixed
             <<static_cast<double>(elapsedUs)/1000000.0<<"s)";
         send(strutil::fromCoreString(stream.str()));

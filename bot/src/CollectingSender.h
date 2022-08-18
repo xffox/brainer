@@ -28,7 +28,7 @@ namespace bot
         }
 
     private:
-        StringCol messages;
+        StringCol messages{};
     };
 }
 

@@ -5,7 +5,7 @@
 
 #include <gloox/message.h>
 
-#include "xlog/xlog.h"
+#include <xlog/xlog.hpp>
 
 #include "core/ITaskGenerator.h"
 

@@ -14,7 +14,7 @@ namespace bot
         const core::String &text() const;
 
     private:
-        core::String result;
+        core::String result{};
     };
 }
 

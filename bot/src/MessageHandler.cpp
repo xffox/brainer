@@ -6,16 +6,21 @@
 #include <gloox/messagesession.h>
 #include <gloox/message.h>
 
+#include <xlog/xlog.hpp>
 #include "MessageProcessor.h"
+#include "RosterManager.hpp"
 
 namespace bot
 {
     MessageHandler::MessageHandler(gloox::Client &client, gloox::MessageSession *session,
-        task::TaskProvider &taskProvider)
-        :client(client), session(session), sender(),
+        task::TaskProvider &taskProvider, const RosterManager &rosterManager)
+        :client(client), rosterManager(rosterManager),
+        session(session), sender(),
         messageProcessor(new MessageProcessor(sender, taskProvider))
     {
         session->registerMessageHandler(this);
+        xlog::log().info("MessageHandler", "message session: '%s'",
+            session->target().bare().c_str());
     }
 
     MessageHandler::~MessageHandler()
@@ -31,6 +36,13 @@ namespace bot
         gloox::MessageSession*)
     {
         assert(messageProcessor.get());
+        if(!rosterManager.isKnown(msg.from()))
+        {
+            xlog::log().info("MessageHandler",
+                "ignoring unauthorized message: '%s'",
+                msg.from().bare().c_str());
+            return;
+        }
         if(msg.subtype() == gloox::Message::Chat)
         {
             messageProcessor->receive(msg.from().username(), msg.body());

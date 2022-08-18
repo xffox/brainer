@@ -9,12 +9,12 @@
 #include <locale>
 #include <codecvt>
 
-#include "xlog/xlog.h"
+#include <xlog/xlog.hpp>
 #include "base/FileConfig.h"
 
 #include "SignalManager.h"
 
-XLOG_SET_LOGGER(xlog::ConsoleLogger)
+XLOG_DEFINE_CONFIG(xlog::DEFAULT_LOG_LEVEL, xlog::ConsoleLogger, xlog::DefaultFormatter)
 
 namespace
 {
@@ -43,7 +43,7 @@ namespace
         }
         ConfMap conf(values.begin(), values.end());
         std::wstring_convert<std::codecvt_utf8<wchar_t>> convert;
-        Config result;
+        Config result{};
         {
             auto tasksFileIter = conf.find(L"tasks_file");
             if(tasksFileIter == conf.end())

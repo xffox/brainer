@@ -1,20 +1,15 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(CORE_NAME core)
+set(CORE_LIB core)
+set(CORE_LIB ${CORE_LIB} PARENT_SCOPE)
 
-set(CORE_INCLUDES "${CMAKE_SOURCE_DIR}/core/include"
-    "${CMAKE_SOURCE_DIR}/base/include"
-    )
-set(CORE_INCLUDES ${CORE_INCLUDES} PARENT_SCOPE)
-
-include_directories(${CORE_INCLUDES})
-
-set(CORE_LIBS ${CORE_NAME} ${BASE_LIBS})
-set(CORE_LIBS ${CORE_LIBS} PARENT_SCOPE)
+set(CORE_INCLUDES "${CMAKE_SOURCE_DIR}/core/include")
 
 set(CORE_SRCS
     "src/TaskLogic.cpp"
     "src/Stopwatch.cpp"
     )
 
-add_library(${CORE_NAME} ${CORE_SRCS})
+add_library(${CORE_LIB} ${CORE_SRCS})
+target_include_directories(${CORE_LIB} PUBLIC "${CORE_INCLUDES}")
+target_link_libraries(${CORE_LIB} ${BASE_LIB})

@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iomanip>
 #include <cstddef>
+#include <utility>
 
 #include "task/TaskProvider.h"
 #include "core/TaskLogic.h"
@@ -17,7 +18,7 @@ namespace bot
 {
     MessageProcessor::MessageProcessor(Sender &sender,
         task::TaskProvider &taskProvider)
-        :sender(sender), taskProvider(taskProvider)
+        :sender(sender), taskProvider(taskProvider), taskLogic{}
     {
     }
 
@@ -152,18 +153,25 @@ namespace bot
         if(taskLogic.get())
         {
             const auto ans = strutil::toCoreString(answer);
-            const auto descr = description(*taskLogic);
-            if(answerTask(ans))
+            auto res = answerTask(ans);
+            if(res.valid)
             {
-                sendValid(from, descr, ans, taskLogic->getStats());
-                sendTask(*taskLogic);
-                return base::Nullable<Validity>(VALID);
+                sendValid(from, res.validityDescription, ans,
+                    taskLogic->getStats());
             }
             else
             {
-                sendInvalid(from, descr, ans);
-                return base::Nullable<Validity>(INVALID);
+                sendInvalid(from, res.validityDescription, ans);
             }
+            if(res.answer)
+            {
+                if(!res.valid)
+                {
+                    sendAnswer(*res.answer);
+                }
+                sendTask(*taskLogic);
+            }
+            return base::Nullable<Validity>(res.valid?VALID:INVALID);
         }
         else
         {
@@ -246,19 +254,26 @@ namespace bot
     }
 
     void MessageProcessor::sendInvalid(const std::string&,
-        const core::String&, const core::String &str)
+        const std::optional<core::String> &descr, const core::String&)
     {
-        send(strutil::fromCoreString(L"WRONG: " + str));
+        std::wstringstream stream;
+        stream<<"WRONG";
+        if(descr)
+        {
+            stream<<": "<<*descr;
+        }
+        send(strutil::fromCoreString(std::move(stream.str())));
     }
 
-    void MessageProcessor::sendValid(const std::string&, const core::String&,
-        const core::String &str, const core::TaskLogic::StatsCol &stats)
+    void MessageProcessor::sendValid(const std::string&,
+        const std::optional<core::String>&,
+        const core::String &answer, const core::TaskLogic::StatsCol &stats)
     {
         std::wstringstream stream;
         if(stats.empty())
             throw std::runtime_error("stats list is empty on valid result");
         const auto elapsedUs = stats.back().timeUs;
-        stream<<L"RIGHT: "<<str
+        stream<<L"RIGHT: "<<answer
             <<" ("<<std::setprecision(2)<<std::fixed
             <<static_cast<double>(elapsedUs)/1000000.0<<"s)";
         send(strutil::fromCoreString(stream.str()));
@@ -321,12 +336,19 @@ namespace bot
         return true;
     }
 
-    bool MessageProcessor::answerTask(const core::String &answer)
+    MessageProcessor::AnswerResult MessageProcessor::answerTask(
+        const core::String &answer)
     {
         if(taskLogic.get())
-            return taskLogic->validate(answer);
-        else
-            return false;
+        {
+            auto res = taskLogic->validate(answer);
+            return {
+                res.validity.valid,
+                std::move(res.validity.description),
+                std::move(res.answer)
+            };
+        }
+        return {false, {}, core::String()};
     }
 
     void MessageProcessor::quit()

@@ -1,6 +1,6 @@
 #include "LogHandler.h"
 
-#include "xlog/xlog.h"
+#include <xlog/xlog.hpp>
 
 #include <cassert>
 

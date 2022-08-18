@@ -4,6 +4,8 @@
 #include <cerrno>
 #include <cstring>
 #include <cassert>
+#include <exception>
+#include <stdexcept>
 
 #include <signal.h>
 

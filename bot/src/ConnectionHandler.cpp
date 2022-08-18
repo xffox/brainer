@@ -2,8 +2,11 @@
 
 #include <cassert>
 
-#include "xlog/xlog.h"
+#include <gloox/rostermanager.h>
+
+#include <xlog/xlog.hpp>
 #include "MUCHandler.h"
+#include "RosterManager.hpp"
 
 namespace bot
 {
@@ -11,7 +14,9 @@ namespace bot
         task::TaskProvider &taskProvider,
         const std::string &roomJid)
         :roomJid(roomJid), client(client), taskProvider(taskProvider),
-        mucHandler(), messageHandlers()
+        mucHandler(),
+        rosterManager(new RosterManager(*client.rosterManager())),
+        messageHandlers()
     {
         client.registerConnectionListener(this);
         client.registerMessageSessionHandler(this);
@@ -34,7 +39,7 @@ namespace bot
         messageHandlers.clear();
         switch(e)
         {
-        case gloox::ConnNoError:
+        case gloox::ConnUserDisconnected:
             xlog::log().info("ConnectionHandler", "bot disconnected");
             break;
         case gloox::ConnStreamError:
@@ -43,7 +48,7 @@ namespace bot
             break;
         default:
             xlog::log().error("ConnectionHandler",
-                "bot connection error: other error");
+                "bot connection error: other error: %d", e);
             break;
         }
     }
@@ -68,14 +73,14 @@ namespace bot
     {
         assert(session);
         std::shared_ptr<MessageHandler> handler(
-            new MessageHandler(client, session, taskProvider));
+            new MessageHandler(client, session, taskProvider, *rosterManager));
         try
         {
             messageHandlers.push_back(handler);
         }
         catch(const std::exception &exc)
         {
-            throw exc;
+            throw;
         }
     }
 

@@ -17,12 +17,18 @@ namespace task
 
 namespace bot
 {
+    class RosterManager;
+
     class MessageHandler: public gloox::MessageHandler
     {
     public:
         MessageHandler(gloox::Client &client, gloox::MessageSession *session,
-            task::TaskProvider &taskProvider);
+            task::TaskProvider &taskProvider,
+            const RosterManager &rosterManager);
         ~MessageHandler();
+
+        MessageHandler(const MessageHandler&) = delete;
+        MessageHandler &operator=(const MessageHandler&) = delete;
 
     protected:
         virtual void handleMessage(const gloox::Message& msg,
@@ -30,6 +36,7 @@ namespace bot
 
     private:
         gloox::Client &client;
+        const RosterManager &rosterManager;
         gloox::MessageSession *session;
         CollectingSender sender;
         std::unique_ptr<MessageProcessor> messageProcessor;

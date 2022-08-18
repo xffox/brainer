@@ -9,6 +9,7 @@
 #include <gloox/mucroom.h>
 #include <gloox/client.h>
 #include <gloox/messagesessionhandler.h>
+#include <gloox/jid.h>
 
 #include "task/TaskProvider.h"
 #include "MessageHandler.h"
@@ -16,6 +17,7 @@
 namespace bot
 {
     class MUCHandler;
+    class RosterManager;
 
     class ConnectionHandler: public gloox::ConnectionListener,
         public gloox::MessageSessionHandler
@@ -48,6 +50,7 @@ namespace bot
         task::TaskProvider &taskProvider;
 
         std::unique_ptr<MUCHandler> mucHandler;
+        std::unique_ptr<RosterManager> rosterManager;
         MessageHandlerCollection messageHandlers;
     };
 }

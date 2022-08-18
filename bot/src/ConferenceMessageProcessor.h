@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <cstddef>
+#include <optional>
 
 #include "MessageProcessor.h"
 
@@ -17,10 +18,10 @@ namespace bot
         virtual base::Nullable<Validity> processAnswer(const std::string &from, const std::string &answer) override;
         virtual void processQuitCmd(const std::string &from, const StringList &args) override;
 
-        virtual void sendInvalid(const std::string &from, const core::String &descr,
-            const core::String &str) override;
-        virtual void sendValid(const std::string &from, const core::String &descr,
-            const core::String &str, const core::TaskLogic::StatsCol &stats) override;
+        virtual void sendInvalid(const std::string &from, const std::optional<core::String> &descr,
+            const core::String &answer) override;
+        virtual void sendValid(const std::string &from, const std::optional<core::String> &descr,
+            const core::String &answer, const core::TaskLogic::StatsCol &stats) override;
         virtual void sendStats(const core::TaskLogic::StatsCol &stats) override;
 
     private:
