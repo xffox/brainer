@@ -6,6 +6,7 @@
 #include <QDialog>
 #include <QStringList>
 #include <QString>
+#include <QListWidgetItem>
 
 #include "TaskDialog.h"
 #include "ui_MenuDialog.h"
@@ -29,7 +30,11 @@ namespace gui
         void showTasks(const QStringList &tasks);
 
     private slots:
-        void onSelected();
+        void onSelected(QListWidgetItem *item);
+        void onStart();
+
+    private:
+        void connectToSignals();
 
     private:
         std::unique_ptr<core::ITaskProvider> taskProvider;

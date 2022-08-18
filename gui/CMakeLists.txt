@@ -1,48 +1,25 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.0)
 
 set(GUI_NAME brainer_gui)
 
 message(STATUS "gui is enabled")
 
-find_package(Qt4)
-if(QT4_FOUND)
-    include(${QT_USE_FILE})
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 
-    include_directories(
-        ${BASE_INCLUDES}
-        "${CMAKE_CURRENT_BINARY_DIR}" # ui headers
-        ${CORE_INCLUDES}
-        ${TASK_INCLUDES}
-        )
+set(CMAKE_AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui")
 
-    set(GUI_SRCS
-        "src/main.cpp"
-        "src/Application.cpp"
-        "src/MenuDialog.cpp"
-        "src/TaskDialog.cpp"
-        )
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
-    set(GUI_MOC_HDRS
-        "src/Application.h"
-        "src/MenuDialog.h"
-        "src/TaskDialog.h"
-        )
+set(GUI_SRCS
+    "src/main.cpp"
+    "src/Application.cpp"
+    "src/MenuDialog.cpp"
+    "src/TaskDialog.cpp"
+    )
 
-    set(GUI_UIS
-        "ui/MenuDialog.ui"
-        "ui/TaskDialog.ui"
-        )
-
-    qt4_wrap_cpp(GUI_MOC_SRCS ${GUI_MOC_HDRS})
-
-    qt4_wrap_ui(GUI_UI_HDRS ${GUI_UIS})
-
-    #qt4_add_resources(GUI_RES_SRCS ${GUI_RES})
-
-    add_executable(${GUI_NAME} ${GUI_SRCS} ${GUI_MOC_SRCS} ${GUI_UI_HDRS})
-    target_link_libraries(${GUI_NAME} ${QT_QTMAIN_LIBRARY} ${QT_LIBRARIES}
-        ${CORE_LIBS} ${TASK_LIBS} ${BASE_LIBS})
-    install(TARGETS ${GUI_NAME} RUNTIME DESTINATION "bin")
-else()
-	message(FATAL "qt not found - gui not available")
-endif()
+add_executable(${GUI_NAME} ${GUI_SRCS})
+target_link_libraries(${GUI_NAME} Qt5::Widgets
+    ${CORE_LIB} ${TASK_LIB} ${BASE_LIB})
+install(TARGETS ${GUI_NAME} RUNTIME DESTINATION "bin")

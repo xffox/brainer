@@ -22,6 +22,8 @@ namespace gui
         timer->setSingleShot(false);
 
         connectToSignals();
+        ui.doneButton->setDefault(true);
+        ui.resultEdit->setFocus();
     }
 
     TaskDialog::~TaskDialog()
@@ -39,16 +41,23 @@ namespace gui
     void TaskDialog::addText(const core::String &str)
     {
         task = QString::fromStdWString(str);
-        ui.taskLabel->setText(task);
+        ui.taskEdit->setText(task);
     }
 
-    void TaskDialog::showInvalid(const core::String &str)
+    void TaskDialog::showInvalid(const core::String &str,
+            const std::optional<core::String> &descr)
     {
-        setStatus(QString("%1 is WRONG").arg(QString::fromStdWString(str)));
+        setStatus(
+            descr
+            ?QString("%1 is WRONG: %2")
+                .arg(QString::fromStdWString(str))
+                .arg(QString::fromStdWString(*descr))
+            :QString("%1 is WRONG").arg(QString::fromStdWString(str)));
         clearResult();
     }
 
-    void TaskDialog::showValid(const core::String &str)
+    void TaskDialog::showValid(const core::String &str,
+            const std::optional<core::String>&)
     {
         setStatus(QString("%1 is RIGHT").arg(QString::fromStdWString(str)));
         clearResult();
@@ -67,14 +76,25 @@ namespace gui
             if(logic.get())
             {
                 const auto answer = getResult().toStdWString();
-                if(logic->validate(answer))
+                auto res = logic->validate(answer);
+                if(res.validity.valid)
                 {
-                    describeTask();
-                    showValid(answer);
+                    showValid(answer, res.validity.description);
                 }
                 else
                 {
-                    showInvalid(answer);
+                    if(res.answer)
+                    {
+                        showAnswer(*res.answer);
+                    }
+                    else
+                    {
+                        showInvalid(answer, res.validity.description);
+                    }
+                }
+                if(res.answer)
+                {
+                    describeTask();
                 }
             }
         }
@@ -122,9 +142,6 @@ namespace gui
 
     void TaskDialog::connectToSignals()
     {
-        // TODO: need this?
-//      connect(ui.resultEdit, SIGNAL(returnPressed()),
-//          this, SLOT(validate()));
         connect(ui.doneButton, SIGNAL(clicked()), this, SLOT(validate()));
         connect(ui.skipButton, SIGNAL(clicked()), this, SLOT(skip()));
         connect(doneShortcut, SIGNAL(activated()), this, SLOT(validate()));
@@ -157,12 +174,12 @@ namespace gui
 
     void TaskDialog::clearStatus()
     {
-        ui.statusLabel->clear();
+        ui.statusEdit->clear();
     }
 
     void TaskDialog::setStatus(const QString &str)
     {
-        ui.statusLabel->setText(str);
+        ui.statusEdit->setText(str);
     }
 
     void TaskDialog::showElapsed(long long elapsedUs)

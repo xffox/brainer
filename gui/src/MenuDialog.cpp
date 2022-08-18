@@ -18,16 +18,13 @@
 
 namespace gui
 {
-    namespace
-    {
-        const char *TASK_PROPERTY = "task";
-    }
-
     MenuDialog::MenuDialog(std::unique_ptr<core::ITaskProvider> taskProvider,
         QWidget *parent)
         :QDialog(parent), taskProvider(std::move(taskProvider))
     {
         ui.setupUi(this);
+
+        connectToSignals();
 
         if(this->taskProvider.get())
         {
@@ -46,28 +43,22 @@ namespace gui
 
     void MenuDialog::showTasks(const QStringList &tasks)
     {
-        QLayoutItem *child = 0;
-        while((child = ui.taskLayout->takeAt(0)))
-            delete child;
+        ui.taskList->clear();
         for(QStringList::const_iterator iter = tasks.begin(),
             endIter = tasks.end(); iter != endIter; ++iter)
         {
-            QPushButton *button  = new QPushButton(*iter, this);
-            button->setProperty(TASK_PROPERTY, *iter);
-            ui.taskLayout->addWidget(button);
-            connect(button, SIGNAL(clicked()), this, SLOT(onSelected()));
+            ui.taskList->addItem(*iter);
         }
     }
 
-    void MenuDialog::onSelected()
+    void MenuDialog::onSelected(QListWidgetItem *item)
     {
-        QObject *const button = sender();
-        Q_ASSERT(button);
         if(taskProvider.get())
         {
             try
             {
-                taskDialog.setTaskGenerator(taskProvider->create(qPrintable(button->property(TASK_PROPERTY).toString())));
+                taskDialog.setTaskGenerator(taskProvider->create(
+                        qPrintable(item->text())));
                 taskDialog.show();
             }
             catch(const std::exception &exc)
@@ -75,5 +66,21 @@ namespace gui
                 QMessageBox::critical(this, "error", exc.what());
             }
         }
+    }
+
+    void MenuDialog::onStart() {
+        auto *const currentItem = ui.taskList->currentItem();
+        if(currentItem)
+        {
+            onSelected(currentItem);
+        }
+    }
+
+    void MenuDialog::connectToSignals()
+    {
+        connect(ui.taskList, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
+            this, SLOT(onSelected(QListWidgetItem*)));
+        connect(ui.startButton, SIGNAL(clicked()),
+            this, SLOT(onStart()));
     }
 }

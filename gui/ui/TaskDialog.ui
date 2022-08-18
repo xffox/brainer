@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>700</width>
-    <height>540</height>
+    <width>900</width>
+    <height>700</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -24,40 +24,34 @@
     <enum>QLayout::SetDefaultConstraint</enum>
    </property>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout">
+    <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,0,0,0">
      <item>
-      <widget class="QLabel" name="taskLabel">
+      <widget class="QTextEdit" name="taskEdit">
        <property name="font">
         <font>
-         <pointsize>36</pointsize>
+         <pointsize>18</pointsize>
         </font>
        </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-       <property name="wordWrap">
+       <property name="readOnly">
         <bool>true</bool>
+       </property>
+       <property name="textInteractionFlags">
+        <set>Qt::NoTextInteraction</set>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="statusLabel">
+      <widget class="QTextEdit" name="statusEdit">
        <property name="font">
         <font>
-         <pointsize>22</pointsize>
+         <pointsize>14</pointsize>
         </font>
        </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-       <property name="wordWrap">
+       <property name="readOnly">
         <bool>true</bool>
+       </property>
+       <property name="textInteractionFlags">
+        <set>Qt::NoTextInteraction</set>
        </property>
       </widget>
      </item>
@@ -79,7 +73,7 @@
           </size>
          </property>
          <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
