@@ -32,7 +32,11 @@ namespace gui
         Q_OBJECT
     public:
         TaskDialog(QWidget *parent = 0);
+
         virtual ~TaskDialog();
+
+        TaskDialog(const TaskDialog&) = delete;
+        TaskDialog &operator=(const TaskDialog&) = delete;
 
         void setTaskGenerator(
             std::unique_ptr<core::ITaskGenerator> taskGenerator);

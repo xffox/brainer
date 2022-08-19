@@ -13,9 +13,11 @@ namespace gui
     TaskDialog::TaskDialog(QWidget *parent)
         :QDialog(parent),
         logic(),
+        ui{},
         doneShortcut(new QShortcut(QKeySequence("Ctrl+D"), this)),
         skipShortcut(new QShortcut(QKeySequence("Ctrl+S"), this)),
-        timer(new QTimer(this))
+        timer(new QTimer(this)),
+        task{}
     {
         ui.setupUi(this);
 

@@ -10,15 +10,11 @@ include(CPack)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-if(CMAKE_BUILD_TYPE STREQUAL "debug")
-    add_definitions(-DDEBUG)
-endif()
-
 set(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/lib")
 set(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 
 if(UNIX)
-    add_definitions("-Wall -Wextra -Weffc++ -pedantic")
+    add_definitions("-Wall -Wextra -Weffc++ -pedantic -Werror")
 endif()
 
 add_subdirectory(base)

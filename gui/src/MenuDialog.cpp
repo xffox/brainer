@@ -20,7 +20,8 @@ namespace gui
 {
     MenuDialog::MenuDialog(std::unique_ptr<core::ITaskProvider> taskProvider,
         QWidget *parent)
-        :QDialog(parent), taskProvider(std::move(taskProvider))
+        :QDialog(parent), taskProvider(std::move(taskProvider)),
+        ui{}, taskDialog{}
     {
         ui.setupUi(this);
 
