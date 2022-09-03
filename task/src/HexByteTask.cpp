@@ -1,6 +1,8 @@
 #include "task/HexByteTask.h"
 
 #include <cstdlib>
+#include <string>
+#include <optional>
 #include <iomanip>
 #include <limits>
 #include <bitset>
@@ -12,20 +14,38 @@
 
 namespace task
 {
+    namespace
+    {
+        std::optional<unsigned char> parseHex(const std::string &str)
+        {
+            constexpr int BASE = 16;
+            try
+            {
+                std::size_t pos{};
+                const auto res = stoull(str, &pos, BASE);
+                if(pos == str.size() &&
+                    res <= std::numeric_limits<unsigned char>::max())
+                {
+                    return res;
+                }
+            }
+            catch(const std::exception&)
+            {
+            }
+            return std::nullopt;
+        }
+    }
+
     bool HexByteTask::validateBase(const core::String &result)
     {
         std::string regStr;
         if(!util::toRegularStr(regStr, result))
-            return false;
-        const char *const s = regStr.c_str();
-        char *endptr = 0;
-        unsigned long res = std::strtoul(s, &endptr, 16);
-        if(endptr != 0 && *endptr == '\0')
         {
-            if(res <= std::numeric_limits<unsigned char>::max())
-            {
-                return res == value;
-            }
+            return false;
+        }
+        if(const auto maybeRes = parseHex(regStr))
+        {
+            return *maybeRes == value;
         }
         return false;
     }
@@ -40,10 +60,11 @@ namespace task
 
     void HexByteTask::describe(core::IRender &render) const
     {
-        std::bitset<8> s(value);
+        constexpr std::size_t BITS = 8;
+        std::bitset<BITS> s(value);
         render.addText(util::toWString(s.to_string()));
     }
 
-    void HexByteTask::hint(core::IRender&, std::size_t) const
+    void HexByteTask::hint(core::IRender&, std::size_t)
     {}
 }

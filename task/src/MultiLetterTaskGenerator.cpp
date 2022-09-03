@@ -1,32 +1,40 @@
 #include "task/MultiLetterTaskGenerator.h"
 
-#include <cassert>
+#include <utility>
 #include <stdexcept>
+#include <cassert>
 
 #include "task/MultiLetterTask.h"
 
 namespace task
 {
-    MultiLetterTaskGenerator::MultiLetterTaskGenerator(unsigned int seed,
+    MultiLetterTaskGenerator::MultiLetterTaskGenerator(
+        base::Randomizer &&random,
         const LetterCol &letters, std::size_t maxLength)
-        :maxLength(maxLength), letters(letters)
+        :maxLength(maxLength), letters(letters), random(std::move(random))
     {
         if(maxLength == 0)
+        {
             throw std::invalid_argument("zero max length");
+        }
         if(this->letters.empty())
+        {
             throw std::invalid_argument("empty letters");
-        srand(seed);
+        }
     }
 
     std::unique_ptr<core::ITask> MultiLetterTaskGenerator::generateTask()
     {
-        const std::size_t sz = rand()%maxLength + 1;
+        assert(maxLength > 0);
+        const auto sz =
+            random.uniformInteger<std::size_t>(0, maxLength-1) + 1;
         core::String key;
         core::String value;
         assert(!letters.empty());
         for(std::size_t i = 0; i < sz; ++i)
         {
-            const auto &letter = letters[rand()%letters.size()];
+            const auto &letter = letters[
+                random.uniformInteger<std::size_t>(0, letters.size()-1)];
             key.append(letter.first);
             value.append(letter.second);
         }

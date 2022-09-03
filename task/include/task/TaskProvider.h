@@ -5,8 +5,8 @@
 #include <functional>
 #include <string>
 #include <vector>
-#include <random>
 
+#include <base/randomizer.hpp>
 #include "core/ITaskProvider.h"
 
 namespace task
@@ -17,12 +17,13 @@ namespace task
         using StringCol = std::vector<std::string>;
 
     public:
-        TaskProvider(const std::string &configFilename);
+        TaskProvider(base::Randomizer &&random,
+            const std::string &configFilename);
 
-        virtual StringSet getTasks() const;
+        StringSet getTasks() const override;
         // throw exception
-        virtual std::unique_ptr<core::ITaskGenerator> create(
-            const std::string &name);
+        std::unique_ptr<core::ITaskGenerator> create(
+            const std::string &name) override;
 
     private:
         using TaskTypeCreatorMap = std::unordered_map<std::string,
@@ -30,8 +31,7 @@ namespace task
 
     private:
         std::string configFilename;
-        std::seed_seq seed;
-        std::minstd_rand random;
+        base::Randomizer rnd;
         TaskTypeCreatorMap creators;
     };
 }

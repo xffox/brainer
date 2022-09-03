@@ -27,6 +27,7 @@ namespace task
 
     std::unique_ptr<core::ITask> MastermindTaskGenerator::generateTask()
     {
+        // TODO: propagate outer seed
         return std::unique_ptr<MastermindTask>(
             new MastermindTask(game.startRandom(), CONFIG));
     }

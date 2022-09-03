@@ -10,7 +10,7 @@ namespace core
     class ITaskGenerator
     {
     public:
-        virtual ~ITaskGenerator(){}
+        virtual ~ITaskGenerator() = default;
 
         virtual std::unique_ptr<ITask> generateTask() = 0;
     };

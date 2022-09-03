@@ -1,9 +1,11 @@
 #ifndef TASK_WORDGENTASKGENERATOR_H
 #define TASK_WORDGENTASKGENERATOR_H
 
+#include <string>
+#include <vector>
 #include <unordered_map>
-#include <random>
 
+#include <base/randomizer.hpp>
 #include "core/ITaskGenerator.h"
 #include "task/StringCollection.h"
 #include "task/WordGen.h"
@@ -15,19 +17,20 @@ namespace task
     public:
         using LetterMap =
             std::unordered_map<core::String, core::String>;
+        using StringCol = std::vector<std::string>;
 
     public:
-        WordGenTaskGenerator(unsigned int seed,
+        WordGenTaskGenerator(base::Randomizer &&random,
             const StringCollection &vocabulary, const LetterMap &letters);
+        WordGenTaskGenerator(base::Randomizer &&random,
+            const StringCol &params);
 
-        virtual std::unique_ptr<core::ITask> generateTask();
+        std::unique_ptr<core::ITask> generateTask() override;
 
     private:
         LetterMap letters;
-        std::seed_seq seedSeq;
-        std::minstd_rand random;
+        base::Randomizer random;
         WordGen wordGen;
-        WordGen::RandomEngine eng;
     };
 }
 

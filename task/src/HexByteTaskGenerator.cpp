@@ -1,18 +1,18 @@
 #include "task/HexByteTaskGenerator.h"
 
-#include <cstdlib>
+#include <utility>
 
 #include "task/HexByteTask.h"
 
 namespace task
 {
-    HexByteTaskGenerator::HexByteTaskGenerator(unsigned int seed)
-    {
-        srand(seed);
-    }
+    HexByteTaskGenerator::HexByteTaskGenerator(base::Randomizer &&random)
+        :random(std::move(random))
+    {}
 
     std::unique_ptr<core::ITask> HexByteTaskGenerator::generateTask()
     {
-        return std::unique_ptr<core::ITask>(new HexByteTask(rand()));
+        return std::unique_ptr<core::ITask>(new HexByteTask(
+                random.uniformInteger<HexByteTask::Value>()));
     }
 }

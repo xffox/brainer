@@ -1,11 +1,12 @@
 #include "task/WordGen.h"
 
+#include <utility>
 #include <cassert>
 
 namespace task
 {
-    WordGen::WordGen(const StringCol &words)
-        :transitions(), eowProbs(), lengthes()
+    WordGen::WordGen(base::Randomizer &&random, const StringCol &words)
+        :transitions(), eowProbs(), lengthes(), random(std::move(random))
     {
         using CountMap = std::unordered_map<core::String::value_type, double>;
         CountMap counts;
@@ -13,7 +14,9 @@ namespace task
         for(const auto &w : words)
         {
             if(w.empty())
+            {
                 continue;
+            }
             wordCount += 1.0;
             for(std::size_t i = 0; i+1 < w.size(); ++i)
             {
@@ -32,39 +35,51 @@ namespace task
             assert(iter != counts.end());
             const auto count = iter->second;
             for(auto &p : probs.second)
+            {
                 p.second /= count;
+            }
         }
         for(auto &p : eowProbs)
+        {
             p.second /= wordCount;
+        }
         for(auto &p : lengthes)
+        {
             p.second /= wordCount;
+        }
     }
 
-    core::String WordGen::generate(RandomEngine &gen) const
+    core::String WordGen::generate()
     {
         core::String res;
         core::String::value_type cur = EOW;
-        std::uniform_real_distribution<> dist(0.0, 1.0);
+        auto probGen = [this](){
+            return random.uniformReal(0.0, 1.0);
+        };
         std::size_t len = 0;
         double eowCumsum = 0.0;
         while(true)
         {
             auto lengthesIter = lengthes.find(len);
             if(lengthesIter != lengthes.end())
+            {
                 eowCumsum += lengthesIter->second;
-            const auto eowRand = dist(gen);
+            }
+            const auto eowRand = probGen();
             auto eowProbsIter = eowProbs.find(cur);
             if(eowProbsIter != eowProbs.end() && eowProbsIter->second > 0.0)
             {
                 if(eowRand < eowCumsum)
+                {
                     break;
+                }
             }
             auto iter = transitions.find(cur);
             assert(iter != transitions.end());
             auto s = 0.0;
             bool found = false;
             core::String::value_type last = EOW;
-            const auto transRand = dist(gen);
+            const auto transRand = probGen();
             for(const auto &p : iter->second)
             {
                 s += p.second;
@@ -77,9 +92,13 @@ namespace task
                 last = p.first;
             }
             if(!found)
+            {
                 cur = last;
+            }
             if(cur == EOW)
+            {
                 break;
+            }
             res.push_back(cur);
             len += 1;
         }

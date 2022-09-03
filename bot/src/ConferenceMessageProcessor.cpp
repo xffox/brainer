@@ -16,10 +16,11 @@ namespace bot
     {
     }
 
-    base::Nullable<ConferenceMessageProcessor::Validity> ConferenceMessageProcessor::processAnswer(const std::string &from, const std::string &answer)
+    std::optional<ConferenceMessageProcessor::Validity> ConferenceMessageProcessor::processAnswer(
+        const std::string &from, const std::string &answer)
     {
         const auto res = MessageProcessor::processAnswer(from, answer);
-        if(!res.isNull())
+        if(res)
         {
             if(*res == VALID)
             {
@@ -56,11 +57,13 @@ namespace bot
     {
         std::wstringstream stream;
         if(stats.empty())
+        {
             throw std::runtime_error("stats list is empty on valid result");
-        const auto elapsedUs = stats.back().timeUs;
+        }
+        const auto elapsed = stats.back().time;
         stream<<strutil::toCoreString(from)<<L", RIGHT: "<<answer
             <<" ("<<std::setprecision(2)<<std::fixed
-            <<static_cast<double>(elapsedUs)/1000000.0<<"s)";
+            <<static_cast<double>(elapsed.count())/1000000.0<<"s)";
         send(strutil::fromCoreString(stream.str()));
     }
 
@@ -98,7 +101,9 @@ namespace bot
                 auto nextIter = iter;
                 ++nextIter;
                 if(nextIter != sortedScores.end())
+                {
                     stream<<std::endl;
+                }
             }
             send(stream.str());
         }

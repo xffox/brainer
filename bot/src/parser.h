@@ -2,42 +2,37 @@
 #define BOT_PARSER_H
 
 #include <string>
+#include <optional>
+#include <utility>
 
 #include "Command.h"
 
-#include "base/Nullable.h"
-
-namespace bot
+namespace bot::parser
 {
-    namespace parser
+    struct Input
     {
-        struct Input
+        enum Type
         {
-            enum Type
-            {
-                TYPE_MSG,
-                TYPE_CMD
-            };
-
-            Input()
-                :type(TYPE_MSG), msg(), cmd{}
-            {}
-
-            Input(const std::string &msg)
-                :type(TYPE_MSG), msg(msg), cmd{}
-            {}
-
-            Input(const Command &cmd)
-                :type(TYPE_CMD), msg(), cmd(cmd)
-            {}
-
-            Type type;
-            std::string msg;
-            Command cmd;
+            TYPE_MSG,
+            TYPE_CMD
         };
 
-        base::Nullable<Input> parse(const std::string &str);
-    }
+        Input() = default;
+
+        Input(std::string msg)
+            :type(TYPE_MSG), msg(std::move(msg)), cmd{}
+        {}
+
+        Input(Command cmd)
+            :type(TYPE_CMD), msg(), cmd(std::move(cmd))
+        {}
+
+        Type type = TYPE_MSG;
+        std::string msg{};
+        Command cmd{};
+    };
+
+    std::optional<Input> parse(const std::string &str);
 }
 
 #endif

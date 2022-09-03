@@ -5,6 +5,7 @@
 #include <utility>
 #include <cstddef>
 
+#include <base/randomizer.hpp>
 #include "core/ITaskGenerator.h"
 #include "core/String.h"
 
@@ -16,15 +17,16 @@ namespace task
         using LetterCol = std::vector<std::pair<core::String, core::String>>;
 
     public:
-        MultiLetterTaskGenerator(unsigned int seed, const LetterCol &letters,
-            std::size_t maxLength = 8);
+        MultiLetterTaskGenerator(base::Randomizer &&random,
+            const LetterCol &letters, std::size_t maxLength = 8);
 
     public:
-        virtual std::unique_ptr<core::ITask> generateTask();
+        std::unique_ptr<core::ITask> generateTask() override;
 
     private:
         std::size_t maxLength;
         LetterCol letters;
+        base::Randomizer random;
     };
 }
 

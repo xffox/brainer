@@ -1,17 +1,20 @@
 #ifndef TASK_HEXBYTETASKGENERATOR_H
 #define TASK_HEXBYTETASKGENERATOR_H
 
+#include <base/randomizer.hpp>
 #include "core/ITaskGenerator.h"
 
 namespace task
 {
-    // TODO: outer random generator
     class HexByteTaskGenerator: public core::ITaskGenerator
     {
     public:
-        HexByteTaskGenerator(unsigned int seed);
+        HexByteTaskGenerator(base::Randomizer &&random);
 
-        virtual std::unique_ptr<core::ITask> generateTask();
+        std::unique_ptr<core::ITask> generateTask() override;
+
+    private:
+        base::Randomizer random;
     };
 }
 

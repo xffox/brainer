@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <memory>
 #include <iterator>
+#include <utility>
 
 #include "task/DictTask.h"
 
@@ -17,7 +18,9 @@ namespace task
             std::back_inserter(result),
             [](const DictTaskGenerator::TaskCollection::value_type &p){return !p.second.empty();});
         if(result.empty())
+        {
             throw std::runtime_error("no suitable tasks");
+        }
         return result;
     }
 
@@ -25,21 +28,21 @@ namespace task
     {
         IndexGenerator::IndexSet result;
         for(std::size_t i = 0; i < sz; ++i)
+        {
             result.insert(i);
+        }
         return result;
     }
 
-    DictTaskGenerator::DictTaskGenerator(unsigned int seed,
+    DictTaskGenerator::DictTaskGenerator(base::Randomizer &&random,
         const TaskCollection &tasks, bool reversed)
         :tasks(prepareTasks(tasks)), reversed(reversed),
-        seedSeq{seed}, random(seedSeq),
-        indexGenerator(prepareIndices(this->tasks.size()),
-            this->tasks.size()/2, random())
+        random(std::move(random)),
+        indexGenerator(this->random.diverge(),
+            prepareIndices(this->tasks.size()), this->tasks.size()/2)
     {}
 
-    DictTaskGenerator::~DictTaskGenerator()
-    {
-    }
+    DictTaskGenerator::~DictTaskGenerator() = default;
 
     std::unique_ptr<core::ITask> DictTaskGenerator::generateTask()
     {
@@ -50,17 +53,21 @@ namespace task
             {
                 const auto &p = tasks[idx];
                 if(!reversed)
+                {
                     return std::unique_ptr<core::ITask>(
-                        new DictTask(p.first, p.second, random()));
+                        new DictTask(random.diverge(), p.first, p.second));
+                }
                 else
+                {
                     return std::unique_ptr<core::ITask>(
-                        new DictTask(p.second, p.first, random()));
+                        new DictTask(random.diverge(), p.second, p.first));
+                }
             }
             catch(const std::exception&)
             {
             }
         }
         // TODO: exception
-        return std::unique_ptr<core::ITask>();
+        return {};
     }
 }

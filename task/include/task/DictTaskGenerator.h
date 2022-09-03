@@ -6,8 +6,8 @@
 #include <vector>
 #include <utility>
 #include <cstddef>
-#include <random>
 
+#include <base/randomizer.hpp>
 #include "core/ITaskGenerator.h"
 #include "core/String.h"
 #include "task/StringCollection.h"
@@ -23,20 +23,20 @@ namespace task
     class DictTaskGenerator: public core::ITaskGenerator
     {
     public:
-        typedef std::vector<std::pair<StringCollection, StringCollection>> TaskCollection;
+        using TaskCollection =
+            std::vector<std::pair<StringCollection, StringCollection>>;
 
     public:
-        DictTaskGenerator(unsigned int seed, const TaskCollection &tasks,
-            bool reversed = false);
-        virtual ~DictTaskGenerator();
+        DictTaskGenerator(base::Randomizer &&random,
+            const TaskCollection &tasks, bool reversed = false);
+        ~DictTaskGenerator() override;
 
-        virtual std::unique_ptr<core::ITask> generateTask();
+        std::unique_ptr<core::ITask> generateTask() override;
 
     private:
         TaskCollection tasks;
         bool reversed;
-        std::seed_seq seedSeq;
-        std::minstd_rand random;
+        base::Randomizer random;
         IndexGenerator indexGenerator;
     };
 }

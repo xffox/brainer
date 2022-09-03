@@ -1,13 +1,13 @@
 #include "base/StreamConfig.h"
 
+#include <array>
 #include <string>
+#include <optional>
 #include <cstddef>
 #include <istream>
 #include <algorithm>
 #include <utility>
-#include <ctype.h>
-
-#include "base/Nullable.h"
+#include <cctype>
 
 namespace base
 {
@@ -18,11 +18,15 @@ namespace base
             if(!str.empty())
             {
                 std::wstring::size_type i = 0;
-                while(i < str.size() && iswspace(str[i]))
+                while(i < str.size() && static_cast<bool>(iswspace(str[i])))
+                {
                     ++i;
+                }
                 std::wstring::size_type j = str.size();
-                while(j-1 > i && iswspace(str[j-1]))
+                while(j-1 > i && static_cast<bool>(iswspace(str[j-1])))
+                {
                     --j;
+                }
                 return str.substr(i, j-i);
             }
             return str;
@@ -31,12 +35,14 @@ namespace base
         bool isComment(const std::wstring &line)
         {
             std::wstring::size_type i = 0;
-            while(i < line.size() && iswspace(line[i]))
+            while(i < line.size() && static_cast<bool>(iswspace(line[i])))
+            {
                 ++i;
+            }
             return (i < line.size() && line[i] == L'#');
         }
 
-        base::Nullable<IConfig::ValuePair> parseLine(const std::wstring &line)
+        std::optional<IConfig::ValuePair> parseLine(const std::wstring &line)
         {
             if (!isComment(line))
             {
@@ -47,7 +53,7 @@ namespace base
                         trim(line.substr(sep+1, std::wstring::npos)));
                 }
             }
-            return base::Nullable<IConfig::ValuePair>();
+            return std::nullopt;
         }
     }
 
@@ -56,11 +62,11 @@ namespace base
         IConfig::ValuesCollection values;
 
         const std::size_t BUF_SZ = 4096; 
-        wchar_t buf[BUF_SZ];
+        std::array<wchar_t, BUF_SZ> buf{};
         std::wstring line;
         do
         {
-            stream.read(buf, sizeof(buf)/sizeof(buf[0]));
+            stream.read(&buf[0], buf.size());
             const std::streamsize len = stream.gcount();
             if(len > 0)
             {
@@ -69,10 +75,12 @@ namespace base
                 while((end = std::find(begin, &buf[len], L'\n')) !=
                     &buf[len])
                 {
-                    line+=std::wstring(begin, end-begin);
-                    base::Nullable<ValuePair> valuePair = parseLine(line);
-                    if(!valuePair.isNull())
-                        values.push_back(*valuePair);
+                    line += std::wstring(begin, end-begin);
+                    auto valuePair = parseLine(line);
+                    if(valuePair)
+                    {
+                        values.push_back(std::move(*valuePair));
+                    }
                     line.clear();
                     begin = end+1;
                 }
@@ -80,9 +88,11 @@ namespace base
             }
         }
         while(stream);
-        base::Nullable<ValuePair> valuePair = parseLine(line);
-        if(!valuePair.isNull())
-            values.push_back(*valuePair);
+        auto valuePair = parseLine(line);
+        if(valuePair)
+        {
+            values.push_back(std::move(*valuePair));
+        }
 
         return values;
     }

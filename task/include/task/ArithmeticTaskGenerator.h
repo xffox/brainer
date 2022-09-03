@@ -1,6 +1,7 @@
 #ifndef TASK_MULTIPLICATIONTASKGENERATOR_H
 #define TASK_MULTIPLICATIONTASKGENERATOR_H
 
+#include <base/randomizer.hpp>
 #include "core/ITaskGenerator.h"
 
 namespace task
@@ -8,9 +9,12 @@ namespace task
     class ArithmeticTaskGenerator: public core::ITaskGenerator
     {
     public:
-        ArithmeticTaskGenerator(unsigned int seed);
+        ArithmeticTaskGenerator(base::Randomizer &&random);
 
-        virtual std::unique_ptr<core::ITask> generateTask();
+        std::unique_ptr<core::ITask> generateTask() override;
+
+    private:
+        base::Randomizer random;
     };
 }
 

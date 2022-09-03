@@ -6,6 +6,7 @@
 #include <random>
 #include <cstddef>
 
+#include <base/randomizer.hpp>
 #include "core/String.h"
 
 namespace task
@@ -13,14 +14,11 @@ namespace task
     class WordGen
     {
     public:
-        using RandomEngine = std::default_random_engine;
-
-    public:
         using StringCol = std::vector<core::String>;
 
     public:
-        WordGen(const StringCol &words);
-        core::String generate(RandomEngine &gen) const;
+        WordGen(base::Randomizer &&random, const StringCol &words);
+        core::String generate();
 
     private:
         using ProbMap = std::unordered_map<core::String::value_type, double>;
@@ -33,6 +31,7 @@ namespace task
         TransMap transitions;
         ProbMap eowProbs;
         LenMap lengthes;
+        base::Randomizer random;
     };
 }
 

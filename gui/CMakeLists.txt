@@ -21,5 +21,5 @@ set(GUI_SRCS
 
 add_executable(${GUI_NAME} ${GUI_SRCS})
 target_link_libraries(${GUI_NAME} Qt5::Widgets
-    ${CORE_LIB} ${TASK_LIB} ${BASE_LIB})
+    ${BRAINER_CORE_LIB} ${BRAINER_TASK_LIB} ${BRAINER_BASE_LIB})
 install(TARGETS ${GUI_NAME} RUNTIME DESTINATION "bin")

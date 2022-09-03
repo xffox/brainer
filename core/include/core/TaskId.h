@@ -3,7 +3,7 @@
 
 namespace core
 {
-    typedef unsigned int TaskId;
+    using TaskId = unsigned int;
 }
 
 #endif

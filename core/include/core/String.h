@@ -5,7 +5,7 @@
 
 namespace core
 {
-    typedef std::wstring String;
+    using String = std::wstring;
 }
 
 #endif

@@ -1,21 +1,20 @@
 #ifndef TASK_CONDITION_H
 #define TASK_CONDITION_H
 
-#include <memory>
+#include <type_traits>
 #include <stdexcept>
 
-namespace task
+namespace task::condition
 {
-    namespace condition
+    template<typename T>
+    std::enable_if_t<std::is_convertible_v<T, bool>, T&&>
+        notNull(T &&ptr)
     {
-        template<typename T>
-        std::unique_ptr<T> &notNull(std::unique_ptr<T> &ptr)
+        if(!ptr)
         {
-            if(ptr.get() == nullptr)
-                throw std::invalid_argument("null argument");
-            return ptr;
+            throw std::invalid_argument("null argument");
         }
-
+        return ptr;
     }
 }
 

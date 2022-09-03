@@ -1,20 +1,28 @@
 #include "task/ArithmeticTaskGenerator.h"
 
-#include <cstdlib>
+#include <type_traits>
+#include <utility>
 
 #include "task/ArithmeticTask.h"
 
 namespace task
 {
-    ArithmeticTaskGenerator::ArithmeticTaskGenerator(unsigned int seed)
-    {
-        srand(seed);
-    }
+    ArithmeticTaskGenerator::ArithmeticTaskGenerator(base::Randomizer &&random)
+        :random(std::move(random))
+    {}
 
     std::unique_ptr<core::ITask> ArithmeticTaskGenerator::generateTask()
     {
+        constexpr ArithmeticTask::Value MIN_VAL = 0;
+        constexpr ArithmeticTask::Value MAX_VAL = 99;
+        auto generateValue = [this](){
+            return random.uniformInteger(MIN_VAL, MAX_VAL);
+        };
+        // TODO: better enum generation
         return std::unique_ptr<core::ITask>(
-            new ArithmeticTask(rand()%100, rand()%100,
-                static_cast<ArithmeticTask::Operation>(rand()%2)));
+            new ArithmeticTask(generateValue(), generateValue(),
+                static_cast<ArithmeticTask::Operation>(
+                    random.uniformInteger<std::underlying_type_t<
+                        ArithmeticTask::Operation>>(0, 1))));
     }
 }

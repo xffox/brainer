@@ -89,7 +89,9 @@ namespace csv
         bool cr = false;
         bool closed = false;
         if(!stream && bufferPos == bufferSize)
+        {
             return res;
+        }
         bool eol = false;
         std::size_t i = 1;
         while(!eol)

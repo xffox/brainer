@@ -12,11 +12,12 @@ namespace core
     class ITaskProvider
     {
     public:
-        typedef std::set<std::string> StringSet;
+        using StringSet = std::set<std::string>;
 
     public:
-        virtual ~ITaskProvider(){}
+        virtual ~ITaskProvider() = default;
 
+        [[nodiscard]]
         virtual StringSet getTasks() const = 0;
         // throw exception
         virtual std::unique_ptr<ITaskGenerator> create(

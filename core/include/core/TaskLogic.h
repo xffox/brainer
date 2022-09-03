@@ -1,12 +1,12 @@
 #ifndef CORE_TASKLOGIC_H
 #define CORE_TASKLOGIC_H
 
+#include <chrono>
 #include <memory>
 #include <vector>
 #include <cstddef>
 #include <optional>
 
-#include "base/Nullable.h"
 #include "core/String.h"
 #include "core/Stats.h"
 
@@ -44,8 +44,10 @@ namespace core
         String skip();
         void hint(IRender &render);
 
-        long long elapsedUs() const;
+        [[nodiscard]]
+        std::chrono::microseconds elapsed() const;
 
+        [[nodiscard]]
         const StatsCol &getStats() const;
 
     private:
@@ -59,7 +61,7 @@ namespace core
         std::unique_ptr<ITask> currentTask;
 
         // TODO: put to stats, use last as current
-        base::Nullable<Stats> current;
+        std::optional<Stats> current;
         StatsCol stats;
         std::size_t hintLevel;
     };

@@ -1,7 +1,6 @@
 #ifndef CORE_ITASK_H
 #define CORE_ITASK_H
 
-#include <string>
 #include <cstddef>
 #include <optional>
 
@@ -21,13 +20,15 @@ namespace core
         };
 
     public:
-        virtual ~ITask(){}
+        virtual ~ITask() = default;
 
         virtual ValidationResult validate(const String &result) = 0;
+        [[nodiscard]]
         virtual bool done() const = 0;
+        [[nodiscard]]
         virtual String answer() const = 0;
         virtual void describe(IRender &render) const = 0;
-        virtual void hint(IRender &render, std::size_t level) const = 0;
+        virtual void hint(IRender &render, std::size_t level) = 0;
     };
 }
 

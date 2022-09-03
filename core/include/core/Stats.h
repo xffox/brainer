@@ -2,6 +2,7 @@
 #define CORE_STATS_H
 
 #include <cstddef>
+#include <chrono>
 
 namespace core
 {
@@ -14,9 +15,9 @@ namespace core
             return *this;
         }
 
-        Stats &setTimeUs(long long timeUs)
+        Stats &setTimeUs(std::chrono::microseconds time)
         {
-            this->timeUs = timeUs;
+            this->time = time;
             return *this;
         }
 
@@ -29,7 +30,7 @@ namespace core
     public:
         // TODO: task ids might be required
         bool answered = false;
-        long long timeUs = 0;
+        std::chrono::microseconds time{};
         std::size_t tries = 0;
     };
 }

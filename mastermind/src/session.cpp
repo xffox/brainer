@@ -1,12 +1,15 @@
 #include "mastermind/session.hpp"
 
+#include <utility>
+
 #include "mastermind/type.hpp"
 #include "util.hpp"
 
 namespace mastermind
 {
-    Session::Session(const Pattern &pattern, const GameConfig &config)
-        :pattern_(pattern), config(config), leftGuesses(config.guesses)
+    Session::Session(Pattern pattern, const GameConfig &config)
+        :pattern_(std::move(pattern)), config(config),
+        leftGuesses(config.guesses)
     {}
 
     std::optional<Feedback> Session::step(const Pattern &guess)

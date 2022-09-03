@@ -1,24 +1,24 @@
 #ifndef CORE_STOPWATCH_H
 #define CORE_STOPWATCH_H
 
-#include <sys/time.h>
+#include <chrono>
 
 namespace core
 {
     class Stopwatch
     {
     public:
-        Stopwatch()
-            :prev()
-        {
-            reset();
-        }
+        Stopwatch();
 
         void reset();
-        long long elapsed() const;
-        
+        [[nodiscard]]
+        std::chrono::microseconds elapsed() const;
+
     private:
-       timeval prev;
+        using Watch = std::chrono::steady_clock;
+
+    private:
+        Watch::time_point prev;
     };
 }
 

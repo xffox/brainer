@@ -90,7 +90,7 @@ namespace task
         render.addText(std::move(ss).str());
     }
 
-    void MastermindTask::hint(core::IRender&, std::size_t) const
+    void MastermindTask::hint(core::IRender&, std::size_t)
     {}
 
     core::String MastermindTask::describeFeedback() const

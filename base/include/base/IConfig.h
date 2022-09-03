@@ -9,11 +9,11 @@ namespace base
     class IConfig
     {
     public:
-        typedef std::pair<std::wstring, std::wstring> ValuePair;
-        typedef std::vector<ValuePair> ValuesCollection;
+        using ValuePair = std::pair<std::wstring, std::wstring> ;
+        using ValuesCollection = std::vector<ValuePair> ;
 
     public:
-        virtual ~IConfig(){}
+        virtual ~IConfig() = default;
 
         // throw std::exception on error
         virtual ValuesCollection read() = 0;

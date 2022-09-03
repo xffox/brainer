@@ -14,20 +14,6 @@ namespace task
 {
     namespace
     {
-        int run(int a, int b, ArithmeticTask::Operation operation)
-        {
-            switch(operation)
-            {
-            case ArithmeticTask::Operation::PLUS:
-                return a+b;
-            case ArithmeticTask::Operation::MULT:
-                return a*b;
-            }
-            assert(false);
-            return 0;
-
-        }
-
         char operationString(ArithmeticTask::Operation op)
         {
             switch(op)
@@ -42,13 +28,13 @@ namespace task
         }
     }
 
-    ArithmeticTask::ArithmeticTask(int a, int b, Operation operation)
+    ArithmeticTask::ArithmeticTask(Value a, Value b, Operation operation)
             :a(a), b(b), result(run(a, b, operation)), operation(operation)
         {}
 
     bool ArithmeticTask::validateBase(const core::String &result)
     {
-        int value = 0;
+        Value value = 0;
         std::string regStr;
         return util::toRegularStr(regStr, result) &&
             base::strutil::fromStr(value, regStr) &&
@@ -67,6 +53,20 @@ namespace task
         render.addText(stream.str());
     }
 
-    void ArithmeticTask::hint(core::IRender&, std::size_t) const
+    void ArithmeticTask::hint(core::IRender&, std::size_t)
     {}
+
+    ArithmeticTask::Value ArithmeticTask::run(Value a, Value b,
+        ArithmeticTask::Operation operation)
+    {
+        switch(operation)
+        {
+        case ArithmeticTask::Operation::PLUS:
+            return a+b;
+        case ArithmeticTask::Operation::MULT:
+            return a*b;
+        }
+        assert(false);
+        return 0;
+    }
 }

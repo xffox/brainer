@@ -47,35 +47,47 @@ namespace
         {
             auto tasksFileIter = conf.find(L"tasks_file");
             if(tasksFileIter == conf.end())
+            {
                 throw std::runtime_error("config: tasks_file missing");
+            }
             result.tasksFile = convert.to_bytes(tasksFileIter->second);
         }
         {
             auto jidIter = conf.find(L"jid");
             if(jidIter == conf.end())
+            {
                 throw std::runtime_error("config: jid missing");
+            }
             result.jid = convert.to_bytes(jidIter->second);
         }
         {
             auto passwordIter = conf.find(L"password");
             if(passwordIter == conf.end())
+            {
                 throw std::runtime_error("config: password missing");
+            }
             result.password = convert.to_bytes(passwordIter->second);
         }
         {
             auto resourceIter = conf.find(L"resource");
             if(resourceIter != conf.end())
+            {
                 result.resource = convert.to_bytes(resourceIter->second);
+            }
         }
         {
             auto roomIter = conf.find(L"room");
             if(roomIter != conf.end())
+            {
                 result.room = convert.to_bytes(roomIter->second);
+            }
         }
         {
             auto hostIter = conf.find(L"host");
             if(hostIter != std::end(conf))
+            {
                 result.host = convert.to_bytes(hostIter->second);
+            }
         }
         return result;
     }

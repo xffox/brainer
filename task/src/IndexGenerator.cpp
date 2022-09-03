@@ -1,29 +1,33 @@
 #include "task/IndexGenerator.h"
 
-#include <cstdlib>
+#include <cstddef>
+#include <utility>
 #include <stdexcept>
 #include <cassert>
 
 namespace task
 {
-    IndexGenerator::IndexGenerator(const IndexSet &indices,
-        std::size_t historyLength, int seed)
+    IndexGenerator::IndexGenerator(base::Randomizer &&random,
+        const IndexSet &indices, std::size_t historyLength)
         :historyLength(historyLength), indices(indices.begin(), indices.end()),
-        excludedIndices()
+        excludedIndices(), random(std::move(random))
     {
         if(indices.empty())
+        {
             throw std::invalid_argument(
                 "empty indices");
+        }
         if(historyLength >= indices.size())
+        {
             throw std::invalid_argument(
                 "history length bigger than indices size");
-        srand(seed);
+        }
     }
 
     std::size_t IndexGenerator::gen()
     {
         assert(!indices.empty());
-        std::size_t pos = rand()%indices.size();
+        auto pos = random.uniformInteger<std::size_t>(0, indices.size()-1);
         const auto idx = indices[pos];
         if(historyLength > 0)
         {

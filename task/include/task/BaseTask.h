@@ -19,6 +19,7 @@ namespace task
             return {false, {}};
         }
 
+        [[nodiscard]]
         bool done() const override
         {
             return wasValid;

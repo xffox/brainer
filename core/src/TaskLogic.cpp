@@ -19,19 +19,17 @@ namespace core
         generate();
     }
 
-    TaskLogic::~TaskLogic()
-    {
-    }
+    TaskLogic::~TaskLogic() = default;
 
     void TaskLogic::generate()
     {
         assert(stopwatch.get());
-        if(!current.isNull())
+        if(current)
         {
-            current->timeUs = stopwatch->elapsed();
+            current->time = stopwatch->elapsed();
             stats.push_back(*current);
         }
-        current = base::Nullable<Stats>(Stats());
+        current = Stats();
         assert(taskGenerator.get());
         currentTask.reset(taskGenerator->generateTask().release());
         assert(currentTask.get());
@@ -41,12 +39,12 @@ namespace core
 
     TaskLogic::ValidationResult TaskLogic::validate(const String &result)
     {
-        if(currentTask.get())
+        if(currentTask)
         {
             const auto res = currentTask->validate(result);
             const auto done = currentTask->done();
             std::optional<String> answer;
-            if(!current.isNull())
+            if(current)
             {
                 current->answered = res.valid;
                 if(!res.valid)
@@ -68,15 +66,17 @@ namespace core
     String TaskLogic::skip()
     {
         String answer;
-        if(currentTask.get())
+        if(currentTask)
+        {
             answer = currentTask->answer();
+        }
         generate();
         return answer;
     }
 
     void TaskLogic::describe(IRender &render)
     {
-        if(currentTask.get())
+        if(currentTask)
         {
             currentTask->describe(render);
         }
@@ -84,15 +84,17 @@ namespace core
 
     void TaskLogic::hint(IRender &render)
     {
-        if(currentTask.get())
+        if(currentTask)
         {
             currentTask->hint(render, hintLevel);
             if(hintLevel < std::numeric_limits<decltype(hintLevel)>::max())
+            {
                 ++hintLevel;
+            }
         }
     }
 
-    long long TaskLogic::elapsedUs() const
+    std::chrono::microseconds TaskLogic::elapsed() const
     {
         assert(stopwatch.get());
         return stopwatch->elapsed();

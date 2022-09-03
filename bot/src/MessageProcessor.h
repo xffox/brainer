@@ -5,7 +5,6 @@
 #include <string>
 #include <optional>
 
-#include "base/Nullable.h"
 #include "core/String.h"
 #include "core/TaskLogic.h"
 
@@ -25,7 +24,7 @@ namespace bot
         class Sender
         {
         public:
-            virtual ~Sender(){}
+            virtual ~Sender() = default;
             virtual void send(const std::string &msg) = 0;
         };
 
@@ -59,7 +58,8 @@ namespace bot
         virtual void processQuitCmd(const std::string &from, const StringList &args);
         virtual void processSkipCmd(const std::string &from, const StringList &args);
         virtual void processHintCmd(const std::string &from, const StringList &args);
-        virtual base::Nullable<Validity> processAnswer(const std::string &from, const std::string &answer);
+        virtual std::optional<Validity> processAnswer(
+            const std::string &from, const std::string &answer);
 
         virtual void sendTaskList();
         virtual void sendNormHelp();
@@ -75,6 +75,7 @@ namespace bot
         virtual void sendAnswer(const core::String &str);
         virtual void sendStats(const core::TaskLogic::StatsCol &stats);
 
+        [[nodiscard]]
         core::TaskLogic *getTaskLogic() const;
         bool play(const std::string &name);
         AnswerResult answerTask(const core::String &answer);

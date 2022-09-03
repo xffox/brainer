@@ -6,6 +6,8 @@
 #include <queue>
 #include <unordered_set>
 
+#include <base/randomizer.hpp>
+
 namespace task
 {
     // Generate index from a given collection, history length configure after
@@ -16,8 +18,9 @@ namespace task
         using IndexSet = std::unordered_set<std::size_t>;
 
     public:
-        IndexGenerator(const IndexSet &indices, std::size_t historyLength,
-            int seed);
+        IndexGenerator(base::Randomizer &&random,
+            const IndexSet &indices, std::size_t historyLength);
+
         std::size_t gen();
 
     private:
@@ -28,6 +31,7 @@ namespace task
         std::size_t historyLength;
         IndexCol indices;
         IdxQueue excludedIndices;
+        base::Randomizer random;
     };
 }
 

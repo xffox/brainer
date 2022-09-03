@@ -15,6 +15,7 @@
 
 #include <xlog/xlog.hpp>
 
+#include <base/randomizer.hpp>
 #include "ConnectionHandler.h"
 #include "LogHandler.h"
 
@@ -101,7 +102,8 @@ namespace bot
         const std::string &host)
         :jid(jid), password(password), resource(resource),
         host(host), room(room),
-        cont(true), taskProvider(new task::TaskProvider(tasksFile)),
+        cont(true), taskProvider(
+            new task::TaskProvider(base::Randomizer(), tasksFile)),
         logHandler(new LogHandler()),
         pingHandler(new PingEventHandler()),
         client{}, clientMutex{}

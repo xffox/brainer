@@ -1,6 +1,7 @@
 #include "MessageProcessor.h"
 
 #include <cassert>
+#include <chrono>
 #include <sstream>
 #include <iomanip>
 #include <cstddef>
@@ -16,23 +17,34 @@
 
 namespace bot
 {
+    namespace
+    {
+        constexpr double fractionalSeconds(std::chrono::microseconds time)
+        {
+            constexpr double MULTIPLIER =
+                std::chrono::duration_cast<decltype(time)>(
+                    std::chrono::seconds(1)).count();
+            return static_cast<double>(time.count())/MULTIPLIER;
+        }
+    }
+
     MessageProcessor::MessageProcessor(Sender &sender,
         task::TaskProvider &taskProvider)
         :sender(sender), taskProvider(taskProvider), taskLogic{}
-    {
-    }
-
-    MessageProcessor::~MessageProcessor()
     {}
+
+    MessageProcessor::~MessageProcessor() = default;
 
     void MessageProcessor::receive(const std::string &from,
         const std::string &msg)
     {
         const auto &body = msg;
         if(body.empty())
+        {
             return;
+        }
         const auto input = parser::parse(body);
-        if(!input.isNull())
+        if(input)
         {
             switch(input->type)
             {
@@ -97,10 +109,14 @@ namespace bot
 
     void MessageProcessor::processHelpCmd(const std::string&, const StringList&)
     {
-        if(taskLogic.get())
+        if(taskLogic)
+        {
             sendPlayHelp();
+        }
         else
+        {
             sendNormHelp();
+        }
     }
 
     void MessageProcessor::processPlayCmd(const std::string&, const StringList &args)
@@ -122,7 +138,7 @@ namespace bot
 
     void MessageProcessor::processQuitCmd(const std::string&, const StringList&)
     {
-        if(taskLogic.get())
+        if(taskLogic)
         {
             sendStats(getTaskLogic()->getStats());
             send("quit");
@@ -136,7 +152,7 @@ namespace bot
 
     void MessageProcessor::processSkipCmd(const std::string&, const StringList&)
     {
-        if(taskLogic.get())
+        if(taskLogic)
         {
             const auto answer = skip();
             sendAnswer(answer);
@@ -148,9 +164,10 @@ namespace bot
         }
     }
 
-    base::Nullable<MessageProcessor::Validity> MessageProcessor::processAnswer(const std::string &from, const std::string &answer)
+    std::optional<MessageProcessor::Validity> MessageProcessor::processAnswer(
+        const std::string &from, const std::string &answer)
     {
-        if(taskLogic.get())
+        if(taskLogic)
         {
             const auto ans = strutil::toCoreString(answer);
             auto res = answerTask(ans);
@@ -171,20 +188,17 @@ namespace bot
                 }
                 sendTask(*taskLogic);
             }
-            return base::Nullable<Validity>(res.valid?VALID:INVALID);
+            return res.valid?VALID:INVALID;
         }
-        else
-        {
-            send("no game is played now");
-            sendNormHelp();
-            return base::Nullable<Validity>();
-        }
+        send("no game is played now");
+        sendNormHelp();
+        return std::nullopt;
     }
 
     void MessageProcessor::processHintCmd(const std::string&,
         const StringList&)
     {
-        if(taskLogic.get())
+        if(taskLogic)
         {
             sendHint(*taskLogic);
         }
@@ -206,7 +220,9 @@ namespace bot
         ss<<"tasks:"<<std::endl;
         const auto tasks = taskProvider.getTasks();
         for(const auto &task : tasks)
+        {
             ss<<task<<std::endl;
+        }
         send(ss.str());
     }
 
@@ -262,7 +278,7 @@ namespace bot
         {
             stream<<": "<<*descr;
         }
-        send(strutil::fromCoreString(std::move(stream.str())));
+        send(strutil::fromCoreString(std::move(stream).str()));
     }
 
     void MessageProcessor::sendValid(const std::string&,
@@ -271,11 +287,13 @@ namespace bot
     {
         std::wstringstream stream;
         if(stats.empty())
+        {
             throw std::runtime_error("stats list is empty on valid result");
-        const auto elapsedUs = stats.back().timeUs;
+        }
+        const auto elapsed = stats.back().time;
         stream<<L"RIGHT: "<<answer
             <<" ("<<std::setprecision(2)<<std::fixed
-            <<static_cast<double>(elapsedUs)/1000000.0<<"s)";
+            <<fractionalSeconds(elapsed)<<"s)";
         send(strutil::fromCoreString(stream.str()));
     }
 
@@ -287,16 +305,20 @@ namespace bot
     void MessageProcessor::sendStats(const core::TaskLogic::StatsCol &stats)
     {
         if(stats.empty())
+        {
             return;
+        }
         std::wstringstream stream;
-        double averageTime = 0.0;
+        std::chrono::microseconds averageTime{};
         std::size_t answeredCount = 0;
         std::size_t wrongCount = 0;
         for(const auto &s : stats)
         {
-            averageTime += s.timeUs;
+            averageTime += s.time;
             if(s.answered)
+            {
                 answeredCount += 1;
+            }
             wrongCount += s.tries;
         }
         averageTime /= stats.size();
@@ -305,7 +327,7 @@ namespace bot
             <<"answered: "<<answeredCount<<" tasks"<<std::endl
             <<"wrong: "<<wrongCount<<" answers"<<std::endl
             <<"average time: "<<std::setprecision(2)<<std::fixed
-                <<averageTime/1000000.0<<"s";
+                <<fractionalSeconds(averageTime)<<"s";
         send(strutil::fromCoreString(stream.str()));
     }
 
@@ -339,7 +361,7 @@ namespace bot
     MessageProcessor::AnswerResult MessageProcessor::answerTask(
         const core::String &answer)
     {
-        if(taskLogic.get())
+        if(taskLogic)
         {
             auto res = taskLogic->validate(answer);
             return {
@@ -358,13 +380,10 @@ namespace bot
 
     core::String MessageProcessor::skip()
     {
-        if(taskLogic.get())
+        if(taskLogic)
         {
             return taskLogic->skip();
         }
-        else
-        {
-            return core::String();
-        }
+        return {};
     }
 }

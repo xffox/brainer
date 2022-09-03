@@ -20,7 +20,7 @@ namespace mastermind
         }
     }
 
-    Game::Game(const GameConfig &config, std::mt19937::result_type seed)
+    Game::Game(const GameConfig &config, Seed seed)
         :config(config), rand(seed)
     {}
 
@@ -29,8 +29,7 @@ namespace mastermind
         return create(config, std::random_device()());
     }
 
-    std::optional<Game> Game::create(const GameConfig &config,
-        std::mt19937::result_type seed)
+    std::optional<Game> Game::create(const GameConfig &config, Seed seed)
     {
         if(!validConfig(config))
         {

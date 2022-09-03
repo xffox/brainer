@@ -10,11 +10,7 @@
 
 #include "csv/csv.h"
 
-namespace task
-{
-namespace inner
-{
-namespace wiktionary
+namespace task::inner::wiktionary
 {
     namespace
     {
@@ -32,7 +28,7 @@ namespace wiktionary
         std::transform(std::begin(term), std::end(term),
             std::back_inserter(lowerTerm),
             [](core::String::value_type v){
-                return std::towlower(v);
+            return std::towlower(v);
             });
         bool first = true;
         const auto descrEndIter = end(descr);
@@ -50,7 +46,7 @@ namespace wiktionary
             {
                 const auto wordBeginPos = std::find_if(iter, lineEndPos,
                     [](core::String::value_type v){
-                        return std::iswalnum(v);
+                    return std::iswalnum(v);
                     });
                 iter = wordBeginPos;
                 auto intermIter = begin(lowerTerm);
@@ -58,7 +54,7 @@ namespace wiktionary
                     std::min(static_cast<std::size_t>(lineEndPos-iter),
                         dropLength);
                 while(intermIter < termDropIter &&
-                    std::iswalnum(*iter) &&
+                    static_cast<bool>(std::iswalnum(*iter)) &&
                     static_cast<wint_t>(*intermIter) == std::towlower(*iter))
                 {
                     ++intermIter;
@@ -72,7 +68,7 @@ namespace wiktionary
                 }
                 iter = std::find_if(iter, lineEndPos,
                     [](core::String::value_type v){
-                        return !std::iswalnum(v);
+                        return !static_cast<bool>(std::iswalnum(v));
                     });
                 if(wordBeginPos < iter)
                 {
@@ -94,11 +90,15 @@ namespace wiktionary
             }
             iter = lineEndPos;
             if(iter < descrEndIter)
+            {
                 ++iter;
+            }
         }
         if(lines >= MIN_LINES)
+        {
             return result;
-        return core::String();
+        }
+        return {};
     }
 
     TaskCollection readWiktionaryDefinitions(std::wistream &stream)
@@ -109,9 +109,13 @@ namespace wiktionary
         {
             auto row = reader.row();
             if(!row.second)
+            {
                 break;
+            }
             if(row.first.size() != COLUMNS)
+            {
                 throw std::runtime_error("invalid row format");
+            }
             if(!suitableTerm(row.first[0]))
             {
                 continue;
@@ -132,18 +136,13 @@ namespace wiktionary
     {
         return std::all_of(
             std::begin(term), std::end(term),
-                [](core::String::value_type v){
-                    if(std::iswalpha(v))
-                    {
-                        const auto lv = std::towlower(v);
-                        return lv >= L'a' && lv <= L'z';
-                    }
-                    else
-                    {
-                        return false;
-                    }
+            [](core::String::value_type v){
+                if(static_cast<bool>(std::iswalpha(v)))
+                {
+                    const auto lv = std::towlower(v);
+                    return lv >= L'a' && lv <= L'z';
+                }
+                return false;
             });
     }
-}
-}
 }

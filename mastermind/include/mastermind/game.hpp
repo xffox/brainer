@@ -12,20 +12,25 @@ namespace mastermind
 {
     class Game
     {
+        using Random = std::mt19937;
+    public:
+        using Seed = Random::result_type;
+
     public:
         static std::optional<Game> create(const GameConfig &config);
         static std::optional<Game> create(const GameConfig &config,
-            std::mt19937::result_type seed);
+            Seed seed);
 
         Session startRandom();
+        [[nodiscard]]
         std::optional<Session> start(const Pattern &pattern) const;
 
     private:
-        Game(const GameConfig &config, std::mt19937::result_type seed);
+        Game(const GameConfig &config, Seed seed);
 
     private:
         GameConfig config;
-        std::mt19937 rand;
+        Random rand;
     };
 }
 

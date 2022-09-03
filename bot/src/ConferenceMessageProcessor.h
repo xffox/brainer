@@ -1,6 +1,7 @@
 #ifndef BOT_CONFERENCEMESSAGEPROCESSOR_H
 #define BOT_CONFERENCEMESSAGEPROCESSOR_H
 
+#include <string>
 #include <unordered_map>
 #include <cstddef>
 #include <optional>
@@ -15,14 +16,15 @@ namespace bot
         ConferenceMessageProcessor(Sender &sender, task::TaskProvider &taskProvider);
 
     protected:
-        virtual base::Nullable<Validity> processAnswer(const std::string &from, const std::string &answer) override;
-        virtual void processQuitCmd(const std::string &from, const StringList &args) override;
+        std::optional<Validity> processAnswer(
+            const std::string &from, const std::string &answer) override;
+        void processQuitCmd(const std::string &from, const StringList &args) override;
 
-        virtual void sendInvalid(const std::string &from, const std::optional<core::String> &descr,
+        void sendInvalid(const std::string &from, const std::optional<core::String> &descr,
             const core::String &answer) override;
-        virtual void sendValid(const std::string &from, const std::optional<core::String> &descr,
+        void sendValid(const std::string &from, const std::optional<core::String> &descr,
             const core::String &answer, const core::TaskLogic::StatsCol &stats) override;
-        virtual void sendStats(const core::TaskLogic::StatsCol &stats) override;
+        void sendStats(const core::TaskLogic::StatsCol &stats) override;
 
     private:
         struct Score

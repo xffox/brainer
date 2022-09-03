@@ -12,8 +12,8 @@ namespace base
     public:
         FileConfig(const std::string &filename);
 
-        virtual ValuesCollection read();
-        
+        ValuesCollection read() override;
+
     private:
         std::string filename;
     };

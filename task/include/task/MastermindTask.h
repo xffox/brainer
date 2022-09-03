@@ -14,15 +14,18 @@ namespace task
         friend class MastermindTaskGenerator;
     public:
         ValidationResult validate(const core::String &result) override;
+        [[nodiscard]]
         bool done() const override;
+        [[nodiscard]]
         core::String answer() const override;
         void describe(core::IRender &render) const override;
-        void hint(core::IRender &render, std::size_t level) const override;
+        void hint(core::IRender &render, std::size_t level) override;
 
     private:
         explicit MastermindTask(const mastermind::Session &session,
             const mastermind::GameConfig &config);
 
+        [[nodiscard]]
         core::String describeFeedback() const;
 
     private:

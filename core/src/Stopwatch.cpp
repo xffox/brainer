@@ -2,33 +2,20 @@
 
 namespace core
 {
-    // TODO: test
-    namespace
+    Stopwatch::Stopwatch()
+        :prev()
     {
-        long long diff(const timeval &left, const timeval &right)
-        {
-            long long result = left.tv_usec;
-            time_t sm = 0;
-            if(result < right.tv_usec)
-            {
-                result += 1000000;
-                sm = 1;
-            }
-            result -= right.tv_usec;
-            result += (left.tv_sec - right.tv_sec - sm)*1000000;
-            return result;
-        }
+        reset();
     }
 
     void Stopwatch::reset()
     {
-        gettimeofday(&prev, 0);
+        prev = Watch::now();
     }
 
-    long long Stopwatch::elapsed() const
+    std::chrono::microseconds Stopwatch::elapsed() const
     {
-        timeval current;
-        gettimeofday(&current, 0);
-        return diff(current, prev);
+        return std::chrono::duration_cast<std::chrono::microseconds>(
+            Watch::now()-prev);
     }
 }

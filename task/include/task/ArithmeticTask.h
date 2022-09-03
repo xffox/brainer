@@ -17,17 +17,23 @@ namespace task
 
     public:
         bool validateBase(const core::String &result) override;
+        [[nodiscard]]
         core::String answer() const override;
         void describe(core::IRender &render) const override;
-        void hint(core::IRender &render, std::size_t level) const override;
+        void hint(core::IRender &render, std::size_t level) override;
 
     private:
-        ArithmeticTask(int a, int b, Operation op);
+        using Value = int;
 
     private:
-        int a;
-        int b;
-        int result;
+        ArithmeticTask(Value a, Value b, Operation op);
+
+        static Value run(Value a, Value b, Operation operation);
+
+    private:
+        Value a;
+        Value b;
+        Value result;
         Operation operation;
     };
 }

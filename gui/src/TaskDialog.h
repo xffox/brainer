@@ -4,10 +4,12 @@
 #include <QDialog>
 #include <QTimer>
 
+#include <chrono>
 #include <memory>
 #include <optional>
 
 #include "core/Stats.h"
+#include "core/String.h"
 #include "core/IRender.h"
 
 #include "ui_TaskDialog.h"
@@ -31,9 +33,9 @@ namespace gui
     {
         Q_OBJECT
     public:
-        TaskDialog(QWidget *parent = 0);
+        TaskDialog(QWidget *parent = nullptr);
 
-        virtual ~TaskDialog();
+        ~TaskDialog() override;
 
         TaskDialog(const TaskDialog&) = delete;
         TaskDialog &operator=(const TaskDialog&) = delete;
@@ -45,7 +47,7 @@ namespace gui
         void entered(const QString &value);
 
     protected:
-        virtual void addText(const core::String &str);
+        void addText(const core::String &str) override;
 
     private slots:
         void validate();
@@ -58,7 +60,7 @@ namespace gui
         void describeTask();
 
         void showStats();
-        void showElapsed(long long elapsedUs);
+        void showElapsed(std::chrono::microseconds elapsed);
 
         void showValid(const core::String &str,
             const std::optional<core::String> &descr);
@@ -67,6 +69,7 @@ namespace gui
         void showAnswer(const core::String &str);
 
         void clearResult();
+        [[nodiscard]]
         QString getResult() const;
 
         void clearStatus();

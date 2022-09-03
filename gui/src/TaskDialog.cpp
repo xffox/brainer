@@ -1,5 +1,6 @@
 #include "TaskDialog.h"
 
+#include <chrono>
 #include <numeric>
 #include <QShortcut>
 #include <stdexcept>
@@ -112,7 +113,9 @@ namespace gui
     void TaskDialog::timed()
     {
         if(logic.get())
-            showElapsed(logic->elapsedUs());
+        {
+            showElapsed(logic->elapsed());
+        }
     }
 
     void TaskDialog::showStats()
@@ -121,7 +124,7 @@ namespace gui
         {
             int validCount = 0;
             int triesCount = 0;
-            long long totalTimeUs = 0;
+            std::chrono::microseconds totalTime{};
             const auto &stats = logic->getStats();
             int taskCount = stats.size();
             for(const auto &s : stats)
@@ -129,14 +132,14 @@ namespace gui
                 if(s.answered)
                     ++validCount;
                 triesCount += s.tries;
-                totalTimeUs += s.timeUs;
+                totalTime += s.time;
             }
             ui.tasksLabel->setText(QString::number(taskCount));
             ui.validLabel->setText(QString::number(validCount));
             ui.triesLabel->setText(QString::number(triesCount));
             if(taskCount > 0)
                 ui.avTimeLabel->setText(QString::number(
-                        totalTimeUs/1000000.0/taskCount, 'f', 2) + 's');
+                        totalTime.count()/1000000.0/taskCount, 'f', 2) + 's');
             else
                 ui.avTimeLabel->setText("");
         }
@@ -157,7 +160,7 @@ namespace gui
         timer->start(300);
         showStats();
         clearResult();
-        showElapsed(0);
+        showElapsed({});
         if(logic.get())
         {
             logic->describe(*this);
@@ -184,9 +187,9 @@ namespace gui
         ui.statusEdit->setText(str);
     }
 
-    void TaskDialog::showElapsed(long long elapsedUs)
+    void TaskDialog::showElapsed(std::chrono::microseconds elapsed)
     {
-        ui.timeLabel->setText(QString::number(elapsedUs/1000000) +
+        ui.timeLabel->setText(QString::number(elapsed.count()/1000000) +
             's');
     }
 }

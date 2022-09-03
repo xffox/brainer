@@ -17,7 +17,7 @@ namespace base
         void release(Index index);
 
     private:
-        typedef std::set<Index> IndexesCollection;
+        using IndexesCollection = std::set<Index>;
 
     private:
         Index max;

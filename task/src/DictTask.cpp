@@ -4,9 +4,10 @@
 #include <sstream>
 #include <iterator>
 #include <stdexcept>
-#include <random>
 #include <vector>
 #include <cwctype>
+#include <utility>
+#include <cassert>
 
 #include "base/strutil.h"
 #include "core/IRender.h"
@@ -34,12 +35,14 @@ namespace task
         }
     }
 
-    DictTask::DictTask(const StringCollection &keys,
-        const StringCollection &values, int seed)
-        :keys(keys), values(values), answers(), seed(seed)
+    DictTask::DictTask(base::Randomizer &&random,
+        const StringCollection &keys, const StringCollection &values)
+        :keys(keys), values(values), answers(), random(std::move(random))
     {
         if(values.empty() || keys.empty())
+        {
             throw std::runtime_error("task values or keys are empty");
+        }
         std::transform(keys.begin(), keys.end(),
             std::inserter(answers, answers.begin()),
             normalizeWord);
@@ -62,14 +65,13 @@ namespace task
                 core::String(L",")));
     }
 
-    void DictTask::hint(core::IRender &render, std::size_t) const
+    void DictTask::hint(core::IRender &render, std::size_t)
     {
         using IdxCollection = std::vector<std::size_t>;
-        std::seed_seq seedSeq({seed});
-        std::minstd_rand random(seedSeq);
         if(!keys.empty())
         {
             const auto &key = keys.front();
+            assert(!key.empty());
             const auto level = key.size()/2;
             IdxCollection indices;
             for(std::size_t i = 0; i < key.size(); ++i)
@@ -80,8 +82,7 @@ namespace task
             for(std::size_t i = 0; i < level; ++i)
             {
                 const auto swapIdx =
-                    std::uniform_int_distribution<std::size_t>(
-                        i, key.size()-1)(random);
+                    random.uniformInteger<std::size_t>(i, key.size()-1);
                 result[indices[swapIdx]] = key[indices[swapIdx]];
                 const auto t = indices[i];
                 indices[i] = indices[swapIdx];
