@@ -10,7 +10,7 @@ set(CMAKE_AUTOUIC ON)
 
 set(CMAKE_AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui")
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 set(GUI_SRCS
     "src/main.cpp"
@@ -20,6 +20,6 @@ set(GUI_SRCS
     )
 
 add_executable(${GUI_NAME} ${GUI_SRCS})
-target_link_libraries(${GUI_NAME} Qt5::Widgets
+target_link_libraries(${GUI_NAME} Qt6::Widgets
     ${BRAINER_CORE_LIB} ${BRAINER_TASK_LIB} ${BRAINER_BASE_LIB})
 install(TARGETS ${GUI_NAME} RUNTIME DESTINATION "bin")
