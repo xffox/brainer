@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.0)
-
 set(TEST_WIKTIONARY_NAME "test_wiktionary")
 
 include_directories(${CSV_INCLUDES})

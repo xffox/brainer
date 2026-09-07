@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.0)
-
 set(BRAINER_TASK_LIB brainertask)
 set(BRAINER_TASK_LIB ${BRAINER_TASK_LIB} PARENT_SCOPE)
 

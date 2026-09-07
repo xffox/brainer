@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.15)
 
 project(brainer)
 
@@ -14,7 +14,7 @@ set(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/lib")
 set(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 
 if(UNIX)
-    add_definitions("-Wall -Wextra -Weffc++ -pedantic -Werror")
+    add_definitions("-Wall -Wextra -Weffc++ -pedantic -Werror -Wno-error=deprecated-declarations")
 endif()
 
 add_subdirectory(base)

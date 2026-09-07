@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.0)
-
 set(BRAINER_BASE_LIB "brainerbase")
 set(BRAINER_BASE_LIB ${BRAINER_BASE_LIB} PARENT_SCOPE)
 

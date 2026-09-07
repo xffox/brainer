@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.0)
-
 set(BRAINER_CSV_LIB "brainercsv")
 set(BRAINER_CSV_LIB ${BRAINER_CSV_LIB} PARENT_SCOPE)
 

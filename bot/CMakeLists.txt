@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.0)
-
 set(BRAINER_BOT brainer_bot)
 set(BRAINER_BOT_LIB brainer_bot_lib)
 
