@@ -4,12 +4,17 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <vector>
+#include <optional>
 #include <unordered_map>
 #include <iterator>
+#include <utility>
 #include <locale>
 #include <codecvt>
 
+#include <CLI/CLI.hpp>
 #include <xlog/xlog.hpp>
+
 #include "base/FileConfig.h"
 
 #include "SignalManager.h"
@@ -20,13 +25,31 @@ namespace
 {
     struct Config
     {
-        std::string jid;
-        std::string password;
-        std::string resource;
-        std::string room;
-        std::string tasksFile;
-        std::string host;
+        std::optional<std::string> jid;
+        std::optional<std::string> password;
+        std::optional<std::string> resource;
+        std::optional<std::string> room;
+        std::optional<std::string> tasksFile;
+        std::optional<std::string> host;
     };
+
+    template<typename ConfLeft, typename ConfRight>
+    Config join(ConfLeft &&left, ConfRight &&right)
+    {
+        const auto joinValue = [&](auto Config::* member) -> decltype(auto) {
+            return right.*member
+                ? std::forward<ConfRight>(right).*member
+                : std::forward<ConfLeft>(left).*member;
+        };
+        return Config {
+            joinValue(&Config::jid),
+            joinValue(&Config::password),
+            joinValue(&Config::resource),
+            joinValue(&Config::room),
+            joinValue(&Config::tasksFile),
+            joinValue(&Config::host),
+        };
+    }
 
     Config readConfig(const std::string &filename)
     {
@@ -46,27 +69,24 @@ namespace
         Config result{};
         {
             auto tasksFileIter = conf.find(L"tasks_file");
-            if(tasksFileIter == conf.end())
+            if(tasksFileIter != conf.end())
             {
-                throw std::runtime_error("config: tasks_file missing");
+                result.tasksFile = convert.to_bytes(tasksFileIter->second);
             }
-            result.tasksFile = convert.to_bytes(tasksFileIter->second);
         }
         {
             auto jidIter = conf.find(L"jid");
-            if(jidIter == conf.end())
+            if(jidIter != conf.end())
             {
-                throw std::runtime_error("config: jid missing");
+                result.jid = convert.to_bytes(jidIter->second);
             }
-            result.jid = convert.to_bytes(jidIter->second);
         }
         {
             auto passwordIter = conf.find(L"password");
-            if(passwordIter == conf.end())
+            if(passwordIter != conf.end())
             {
-                throw std::runtime_error("config: password missing");
+                result.password = convert.to_bytes(passwordIter->second);
             }
-            result.password = convert.to_bytes(passwordIter->second);
         }
         {
             auto resourceIter = conf.find(L"resource");
@@ -93,13 +113,34 @@ namespace
     }
 }
 
-int main()
+int main(const int argc, const char *const *const argv)
 {
+    CLI::App app;
+    std::vector<std::string> configPaths;
+    app.add_option("--config", configPaths)->default_val(std::vector<std::string>{"brainer_bot.conf"});
+    CLI11_PARSE(app, argc, argv);
     try
     {
-        const auto config = readConfig("brainer_bot.conf");
-        bot::Bot bot(config.tasksFile, config.jid, config.password,
-            config.resource, config.room, config.host);
+        Config config{};
+        for (const auto &configPath : configPaths)
+        {
+            config = join(config, readConfig(configPath));
+        }
+        if(!config.tasksFile)
+        {
+            throw std::runtime_error("config: tasks_file missing");
+        }
+        if(!config.jid)
+        {
+            throw std::runtime_error("config: jid missing");
+        }
+        if(!config.password)
+        {
+            throw std::runtime_error("config: password missing");
+        }
+        bot::Bot bot(config.tasksFile.value(), config.jid.value(),
+            config.password.value(), config.resource.value_or(""),
+            config.room.value_or(""), config.host.value_or(""));
         auto term = [&bot](){bot.kill();};
         try
         {

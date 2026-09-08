@@ -4,6 +4,7 @@ set(BRAINER_BOT_LIB brainer_bot_lib)
 message(STATUS "bot is enabled")
 
 find_package(PkgConfig REQUIRED)
+find_package(CLI11 REQUIRED)
 find_package(XLog REQUIRED)
 pkg_check_modules(GLOOX REQUIRED gloox)
 
@@ -17,7 +18,7 @@ list(REMOVE_ITEM "src/main.cpp")
 
 add_library(${BRAINER_BOT_LIB} ${BOT_SRCS})
 target_include_directories(${BRAINER_BOT_LIB} PUBLIC "${BOT_INCLUDES}")
-target_link_libraries(${BRAINER_BOT_LIB} PUBLIC "${BOT_LIBS}" xlog::xlog)
+target_link_libraries(${BRAINER_BOT_LIB} PUBLIC "${BOT_LIBS}" CLI11::CLI11 xlog::xlog)
 
 add_executable(${BRAINER_BOT} "src/main.cpp")
 target_link_libraries(${BRAINER_BOT} ${BRAINER_BOT_LIB})
